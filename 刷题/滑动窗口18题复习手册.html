@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>滑动窗口 · 18 题复习手册（定长 8 + 不定长 10）</title>
+<meta name="description" content="LeetCode 中文站滑动窗口题单 18 题逐题总结：定长 8 题 + 不定长 10 题，含一句话题意、原理讲解、滑动窗口动画演示、C++ 代码、复杂度与易错点，支持搜索、笔记与进度标记。">
+<style>
+:root{
+  --bg:#f5f7fb; --panel:#ffffff; --panel-2:#f2f4fa; --text:#1b2030; --muted:#5d6579;
+  --border:#e3e6ef; --primary:#3b5bdb; --primary-soft:#e9edfd; --chip:#eef1f8;
+  --ok:#0f8a4d; --ok-soft:#e6f6ed; --warn:#b45309; --warn-soft:#fff5e8;
+  --code-bg:#f8f9fd; --code-text:#1f2430; --kw:#8a3ffc; --st:#0a7b3e; --cm:#7a8296; --nu:#b3541e;
+  --shadow:0 1px 2px rgba(20,28,60,.04),0 8px 24px rgba(20,28,60,.05);
+}
+html[data-theme="dark"]{
+  --bg:#0f1116; --panel:#171a22; --panel-2:#1e222c; --text:#e6e9f2; --muted:#98a1b8;
+  --border:#2a2f3d; --primary:#7d97ff; --primary-soft:#212a48; --chip:#232837;
+  --ok:#4ecf8f; --ok-soft:#152a20; --warn:#e8a765; --warn-soft:#2e2318;
+  --code-bg:#12151c; --code-text:#dfe4ef; --kw:#c792ea; --st:#7ee0a3; --cm:#78829a; --nu:#ffb86b;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.75 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3,h4{line-height:1.35;margin:0}
+ul{margin:6px 0;padding-left:20px}
+li{margin:3px 0}
+.skip{position:absolute;left:-9999px;top:0}
+.skip:focus{left:12px;top:12px;background:var(--panel);padding:8px 12px;border-radius:8px;z-index:99;box-shadow:var(--shadow)}
+
+/* ---------- 顶栏 ---------- */
+.top{background:var(--panel);border-bottom:1px solid var(--border);padding:16px 22px 12px}
+.top-inner{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;max-width:1260px;margin:0 auto}
+.brand{display:flex;gap:12px;align-items:center;min-width:280px}
+.logo{flex:0 0 auto;width:44px;height:44px;border-radius:13px;background:var(--primary);color:#fff;display:grid;place-items:center;font:700 15px/1 ui-monospace,Consolas,monospace;letter-spacing:.5px}
+h1{font-size:19px}
+.sub{margin:3px 0 0;color:var(--muted);font-size:13px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search input{width:300px;max-width:62vw;padding:9px 12px;border:1px solid var(--border);border-radius:10px;
+  background:var(--panel-2);color:var(--text);font-size:14px;font-family:inherit}
+.search input:focus{outline:2px solid var(--primary);outline-offset:1px}
+.btn{cursor:pointer;border:1px solid var(--border);background:var(--panel-2);color:var(--text);
+  border-radius:10px;padding:9px 13px;font-size:14px;font-family:inherit;transition:.15s}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover{color:#fff;filter:brightness(1.06)}
+.btn.sm{padding:5px 11px;font-size:13px;border-radius:8px}
+.btn[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+.progress-wrap{max-width:1260px;margin:12px auto 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.progress{flex:1 1 200px;height:7px;background:var(--panel-2);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+.bar{height:100%;width:0;background:var(--primary);transition:width .3s}
+.pct{font-size:12.5px;color:var(--muted);white-space:nowrap}
+
+/* ---------- 布局 ---------- */
+.layout{max-width:1260px;margin:0 auto;display:grid;grid-template-columns:248px minmax(0,1fr);gap:22px;padding:22px}
+.side nav{position:sticky;top:16px;display:flex;flex-direction:column;gap:3px;background:var(--panel);
+  border:1px solid var(--border);border-radius:14px;padding:10px;max-height:calc(100vh - 32px);overflow:auto;box-shadow:var(--shadow)}
+.side .navtitle{font-size:12px;color:var(--muted);padding:4px 10px 8px;letter-spacing:.06em}
+.side a{display:block;padding:7px 10px;border-radius:9px;color:var(--muted);font-size:13.5px;
+  border-left:3px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side a:hover{background:var(--panel-2);text-decoration:none;color:var(--text)}
+.side a.active{color:var(--primary);background:var(--primary-soft);border-left-color:var(--primary);font-weight:600}
+.side a .n{font-family:ui-monospace,Consolas,monospace;margin-right:6px;opacity:.85}
+
+main{min-width:0;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px 22px;
+  box-shadow:var(--shadow);scroll-margin-top:16px}
+.empty{text-align:center;color:var(--muted);padding:26px;background:var(--panel);border:1px dashed var(--border);border-radius:14px}
+.foot{max-width:1260px;margin:6px auto 30px;padding:0 22px;color:var(--muted);font-size:12.5px;text-align:center}
+.foot code{font-family:ui-monospace,Consolas,monospace;background:var(--chip);padding:1px 6px;border-radius:6px}
+
+/* ---------- 导语 / 通用套路 ---------- */
+.intro h2{font-size:20px;margin-bottom:4px}
+.intro .lead{color:var(--muted);margin:6px 0 14px}
+.blk{margin:16px 0}
+.blk h3{font-size:15.5px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.blk h3::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--primary);display:inline-block}
+.blk p{margin:6px 0}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 2px}
+.tag{font-size:12.5px;background:var(--chip);color:var(--muted);border:1px solid var(--border);border-radius:99px;padding:3px 10px}
+table.tbl{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px;display:block;overflow-x:auto}
+table.tbl th,table.tbl td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top}
+table.tbl th{background:var(--panel-2);font-weight:600;white-space:nowrap}
+table.tbl td code,table.tbl th code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:var(--chip);padding:1px 5px;border-radius:5px}
+.callout{background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:0 12px 12px 0;padding:10px 14px;margin:12px 0;font-size:14px}
+.callout strong{color:var(--warn)}
+
+/* ---------- 题目卡片 ---------- */
+.p-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.num{font-family:ui-monospace,Consolas,monospace;background:var(--primary-soft);color:var(--primary);
+  border-radius:8px;padding:3px 9px;font-weight:700;font-size:13px}
+.p-head h2{font-size:18.5px}
+.rating{font-size:12px;color:var(--muted);background:var(--chip);border-radius:99px;padding:3px 10px;white-space:nowrap}
+.p-head .link{margin-left:auto;font-size:13px;white-space:nowrap}
+.oneline{margin:0 0 12px;font-size:14.5px}
+.oneline b{color:var(--primary)}
+.principle{border-left:3px solid var(--primary);background:var(--primary-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0}
+.principle p{margin:0 0 9px;font-size:14.5px}
+.principle p:last-child{margin-bottom:0}
+.principle b{color:var(--primary)}
+.principle code,.blk code,.callout code,li code,.note code,.oneline code{font-family:ui-monospace,Consolas,monospace;font-size:13px;
+  background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:0 5px}
+.formula{display:block;font-family:ui-monospace,Consolas,monospace;font-size:13px;background:var(--panel);
+  border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-top:9px;white-space:pre;overflow-x:auto;color:var(--text)}
+h3.sec{font-size:14.5px;margin:16px 0 8px;color:var(--muted);letter-spacing:.02em}
+
+/* ---------- 动画演示 ---------- */
+.demo{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:14px;margin:14px 0}
+.demo-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.step-badge{font-size:12px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;margin-left:auto;white-space:nowrap}
+.track{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 10px}
+.cell{flex:0 0 auto;width:48px;text-align:center}
+.cell .idx{font-size:10.5px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;line-height:1.4}
+.cell .box{height:46px;border-radius:10px;border:1px solid var(--border);background:var(--panel);display:grid;place-items:center;
+  font-family:ui-monospace,Consolas,monospace;font-weight:600;font-size:14px;color:var(--text);transition:all .18s}
+.cell.in .box{background:var(--primary);border-color:var(--primary);color:#fff;transform:translateY(-3px);box-shadow:0 7px 16px rgba(59,91,219,.28)}
+.cell.edge .box{background:var(--panel);border:1px dashed var(--primary);color:var(--primary)}
+.cell.center .box{outline:3px solid var(--warn);outline-offset:2px}
+.cell.ok .box{background:var(--ok);border-color:var(--ok);color:#fff}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 6px}
+.stat{font-size:13px;background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:4px 10px;
+  font-family:ui-monospace,Consolas,monospace}
+.stat.yes{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.stat.no{color:var(--muted)}
+.answer{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:var(--primary);font-weight:600;
+  background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:4px 10px;display:inline-block;margin-top:4px}
+.note{font-size:13.5px;color:var(--muted);margin:8px 0 0;min-height:22px}
+.legend{font-size:12.5px;color:var(--muted);margin-top:6px}
+
+/* ---------- 代码 ---------- */
+details.code{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:8px 0 4px}
+details.code summary{cursor:pointer;padding:9px 14px;background:var(--panel-2);font-size:13.5px;list-style:none;display:flex;align-items:center;gap:8px}
+details.code summary::-webkit-details-marker{display:none}
+details.code summary::before{content:"▾";color:var(--muted);font-size:12px}
+details.code:not([open]) summary::before{content:"▸"}
+.code-head{display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--chip);border-top:1px solid var(--border);
+  font:12.5px ui-monospace,Consolas,monospace;color:var(--muted)}
+.code-head .btn{margin-left:auto}
+pre{margin:0;background:var(--code-bg);color:var(--code-text);padding:14px 16px;border-top:1px solid var(--border);
+  overflow-x:auto;white-space:pre;font:13px/1.68 ui-monospace,Consolas,"Cascadia Mono",monospace;tab-size:4}
+pre .kw{color:var(--kw)} pre .st{color:var(--st)} pre .cm{color:var(--cm);font-style:italic} pre .nu{color:var(--nu)}
+
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.chip{font-size:12.5px;background:var(--chip);color:var(--muted);border:1px solid var(--border);border-radius:99px;padding:3px 10px}
+.chip.ok{color:var(--ok);border-color:var(--ok)}
+.pitfalls{margin-top:6px}
+.pitfalls ul{padding-left:22px}
+.pitfalls li{font-size:14px}
+.note-box{margin-top:14px}
+.note-box label{font-size:13.5px;color:var(--muted);display:block;margin-bottom:6px}
+textarea{width:100%;min-height:74px;resize:vertical;padding:10px 12px;border:1px solid var(--border);border-radius:10px;
+  background:var(--panel-2);color:var(--text);font:14px/1.7 inherit}
+textarea:focus{outline:2px solid var(--primary);outline-offset:1px}
+.save{font-size:12.5px;color:var(--muted);display:inline-block;margin-top:5px;min-height:18px}
+.mastered{display:inline-flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;cursor:pointer;
+  background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:7px 12px}
+.mastered input{width:16px;height:16px;accent-color:var(--primary)}
+.mastered.done{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.related{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.btn:disabled{opacity:.42;cursor:not-allowed}
+.btn:disabled:hover{border-color:var(--border);color:var(--text)}
+.note-lead{margin:0 0 8px}
+
+/* ---------- 分组分隔条 ---------- */
+.groupbar{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:10px 4px 0;padding:12px 16px;
+  background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:12px;box-shadow:var(--shadow)}
+.groupbar h2{font-size:17px}
+.groupbar .gdesc{font-size:13px;color:var(--muted)}
+.groupbar .gcount{font-size:12.5px;color:var(--primary);background:var(--primary-soft);border-radius:99px;padding:2px 10px;margin-left:auto;white-space:nowrap}
+.side .navgroup{font-size:11.5px;color:var(--muted);letter-spacing:.08em;padding:10px 10px 4px;border-top:1px dashed var(--border);margin-top:4px}
+.side .navgroup:first-of-type{border-top:none;margin-top:0;padding-top:2px}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr);padding:14px;gap:14px}
+  .side nav{position:static;flex-direction:row;overflow-x:auto;max-height:none;gap:6px;padding:9px}
+  .side .navtitle{display:none}
+  .side a{border-left:none;border-bottom:3px solid transparent;border-radius:8px;font-size:13px;padding:6px 9px}
+  .side a.active{border-left:none;border-bottom-color:var(--primary)}
+  .brand{min-width:0}
+  h1{font-size:17px}
+  .search input{width:100%;max-width:none}
+  .top{padding:14px}
+  .card{padding:16px;border-radius:14px}
+  .cell{width:42px}
+  .cell .box{height:42px}
+  .formula{white-space:pre-wrap;word-break:break-word}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">SW</span>
+      <div>
+        <h1>滑动窗口 · 18 题复习手册</h1>
+        <p class="sub">LeetCode 中文站滑动窗口题单 · 定长 8 题 + 不定长 10 题 · C++ 实现 · 逐题动画演示</p>
+      </div>
+    </div>
+    <div class="tools">
+      <label class="search"><input id="q" type="search" placeholder="搜索：1004 / 不定长 / 易错 / 哈希表（空格分隔多个）" aria-label="搜索题目与内容"></label>
+      <button id="theme" class="btn" type="button" aria-pressed="false">深色模式</button>
+      <button id="export" class="btn" type="button">导出笔记</button>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress" role="img" aria-label="复习进度"><div id="bar" class="bar"></div></div>
+    <span id="pct" class="pct" role="status" aria-live="polite">已掌握 0 / 18</span>
+    <span id="hits" class="pct" role="status" aria-live="polite"></span>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="side">
+    <nav id="toc" aria-label="题目目录"></nav>
+  </aside>
+  <main id="main">
+    <section id="intro" class="card intro" data-id="intro"></section>
+    <div id="problems"></div>
+    <p id="empty" class="empty" hidden>没有匹配的题目，换个关键词试试。</p>
+  </main>
+</div>
+
+<footer class="foot">
+  <p>共 18 题 · 定长 8 题（难度分合计 12571）+ 不定长 10 题（有标注的 9 题合计 13581） · 单个 HTML 文件，离线可用（笔记与进度存在本机浏览器）</p>
+</footer>
+
+<script>
+var INTRO = {
+  title: "定长滑动窗口 · 通用套路",
+  lead: "这 8 道题都来自 LeetCode 中文站「滑动窗口 · 定长窗口」题单的基础部分，难度分从 1263 到 1574。骨架完全一样：维护一个长度恒为 k 的窗口，右进左出，每滑一步更新答案。差别只在两件事——窗口里维护什么统计量、答案是什么形式。",
+  blocks: [
+    {
+      h: "一句话本质",
+      p: "定长滑动窗口 = 维护一个长度为 k 的队列。右指针移动视作入队，左指针移动视作出队。因为长度固定，两个端点永远同步向前：i 每走一格，就「进来一个、出去一个」。窗口内的统计量只需要增量更新（加新元素、减老元素），不需要每次重新计算，所以整个过程是 O(n)。"
+    },
+    {
+      h: "四步模板",
+      p: "① 决定窗口里维护什么：一个 long long 存和，或一个 int 存满足条件的元素个数，或一张哈希表做去重统计。\n② 先把前 k 个元素放进窗口（也就是初始化统计量）。\n③ 从下标 k 开始滑动：先把 nums[i] 加进来，再把 nums[i-k] 移出去。\n④ 每滑完一步，立刻用当前统计量更新答案。",
+      formula: "窗口统计量 ← 统计量 + 新进入的元素 − 移出窗口的元素\n答案 ← 用第 ③ 步之后的统计量更新（此时窗口正好是 [i-k+1, i]）"
+    },
+    {
+      h: "两种等价写法，选一种吃透",
+      p: "写法一用单循环 + 提前 continue 跳过窗口未成形的前 k-1 步，初始化与滑动共用一套代码（2841、2461 用的就是它）；写法二先单独铺满第一个窗口，再整窗右移，读起来更直观（643、1343 用的就是它）。两种都可以，关键是别混着写，混着写最容易把出队下标写错。"
+    },
+    {
+      h: "什么时候统计量要升级",
+      p: "判断依据只有一句：滑一步之后，这个统计量能不能 O(1) 更新出来。求和、计数能，就直接用变量；要「窗口内有几种不同的元素」这种信息，就必须用哈希表记每个值出现了几次，否则每次都要重新扫一遍窗口。"
+    }
+  ],
+  codes: [
+    {
+      title: "写法一：单循环 + 提前 continue（推荐背下来）",
+      code: "// ---------- 定长滑窗 · 通用模板（写法一） ----------\nint n = nums.size();                 // n 为数组长度，窗口长度固定为 k\nlong long s = 0;                     // ① 窗口内维护的统计量：元素和\nunordered_map<int, int> cnt;         //    需要去重时再加一张哈希表：值 -> 出现次数\nlong long ans = 0;                   //    答案（按题目要求初始化）\n\nfor (int i = 0; i < n; ++i) {\n    // ② 右指针入队：新元素进入窗口\n    s += nums[i];\n    ++cnt[nums[i]];\n\n    if (i < k - 1) continue;         // 窗口还不足 k 个，先不结算\n\n    // ③ 此时窗口是 [i - k + 1, i]，正好 k 个元素，结算答案\n    if ((int)cnt.size() == k) ans = max(ans, s);\n\n    // ④ 左指针出队：为下一次滑动做准备\n    int out = i - k + 1;             // 最左边的元素即将离开窗口\n    s -= nums[out];\n    if (--cnt[nums[out]] == 0) cnt.erase(nums[out]);   // 计数减到 0 必须删键！\n}\nreturn ans;"
+    },
+    {
+      title: "写法二：先铺满第一个窗口，再整窗右移",
+      code: "// ---------- 定长滑窗 · 通用模板（写法二） ----------\nlong long s = 0;\nfor (int i = 0; i < k; ++i) s += nums[i];   // 第一个窗口 [0, k-1]\nlong long ans = s;                          // 用它初始化答案\n\nfor (int i = k; i < n; ++i) {\n    // 窗口整体右移一位：右边进来 nums[i]，左边出去 nums[i - k]\n    s += nums[i] - nums[i - k];\n    ans = max(ans, s);                      // 滑完立刻更新答案\n}\nreturn ans;"
+    }
+  ],
+  tableA: {
+    title: "统计量选型对照",
+    head: ["窗口里要维护的东西", "用什么装", "对应题目"],
+    rows: [
+      ["元素和", "一个 <code>long long</code> 变量", "643 / 1343 / 2090 / 1423"],
+      ["满足条件的元素个数", "一个 <code>int</code> 变量", "1456（元音个数） / 2379（黑块个数）"],
+      ["窗口内有几种不同的值", "<code>unordered_map&lt;int,int&gt;</code>（值 → 出现次数）", "2461（恰好 k 种） / 2841（至少 m 种）"],
+      ["窗口本身在动，答案在两端", "长度为 <code>n - k</code> 的中间窗口", "1423（总和 − 中间最小和）"]
+    ]
+  },
+  tableB: {
+    title: "8 题一览（按难度分排序）",
+    head: ["题号", "题目", "难度分", "窗口维护什么", "答案是什么"],
+    rows: [
+      ["1456", "定长子串中元音的最大数目", "1263", "窗口内元音字母个数", "元音个数在所有窗口中的最大值"],
+      ["643", "子数组最大平均数 I", "基础", "窗口元素和", "最大和 ÷ k（最大平均数）"],
+      ["1343", "大小为 K 且平均值大于等于阈值的子数组数目", "1317", "窗口元素和", "满足「和 ≥ k × 阈值」的窗口个数"],
+      ["2090", "半径为 k 的子数组平均值", "1358", "窗口元素和", "每个中心位置的平均值，放不下则 -1"],
+      ["2379", "得到 K 个黑块的最少涂色次数", "1360", "窗口内黑块 B 的个数", "k − 黑块最大个数（剩下的 W 都要涂）"],
+      ["2841", "几乎唯一子数组的最大和", "1546", "元素和 + 不同元素种类数", "种类数 ≥ m 的窗口中，元素和的最大值"],
+      ["2461", "长度为 K 子数组中的最大和", "1553", "元素和 + 不同元素种类数", "种类数恰好 = k 的窗口中，元素和的最大值"],
+      ["1423", "可获得的最大点数", "1574", "中间 n−k 个元素的窗口和", "总和 − 中间窗口的最小和（= 两端可取的最大点数）"]
+    ]
+  },
+  pitfalls: [
+    "出队下标：两个循环的写法里，出去的是 <code>nums[i - k]</code>；单循环的写法里是 <code>nums[i - k + 1]</code>。写错就会把窗口中还在的元素减掉。",
+    "结算时机：一定要在窗口填满（≥ k 个）之后才更新答案，否则前 k-1 步会把长度不足 k 的窗口也算进去。",
+    "浮点误差：能比整数就别比浮点。1343 把「平均值 ≥ threshold」换算成「和 ≥ k × threshold」；643 只在最后做一次除法，不要每步都除。",
+    "溢出：元素和统一用 <code>long long</code>。643 中 n 可达 1e5、元素可达 1e4，总和会超 <code>int</code>；2841 的元素可达 1e9，必须用 <code>long long</code>。",
+    "哈希表删键：出队时计数减到 0 一定要 <code>erase</code>，否则 <code>cnt.size()</code> 会统计到早已离开窗口的值，种类数永远偏大。",
+    "边界：1423 当 k == n 时，中间窗口长度为 0，必须单独返回总和，否则初始化循环一次都不执行、最小值还停在 0。"
+  ],
+  links: [
+    { label: "题单原文：滑动窗口题单（定长窗口）", href: "https://leetcode.cn/discuss/post/3578981/ti-dan-hua-dong-chuang-kou-ding-chang-bu-rzz7/" },
+    { label: "套路文章：教你解决定长滑窗", href: "https://leetcode.cn/problems/maximum-number-of-vowels-in-a-substring-of-given-length/solutions/2809359/tao-lu-jiao-ni-jie-jue-ding-chang-hua-ch-fzfo/" }
+  ]
+};
+
+var INTRO2 = {
+  title: "不定长滑动窗口 · 通用套路",
+  lead: "这 10 道题的窗口长度不固定：右端点每走一步，都可能让窗口「变得不合法」，于是左端点要按需右移，把窗口重新收回到合法状态。这是刷题里出现频率最高的滑动窗口形态，也是「最长 / 最多 / 至多 k 个」这类问法的标准解法。",
+  blocks: [
+    {
+      h: "和定长的唯一区别：左端点不再跟着走",
+      p: "定长窗口的两个端点同步右移，所以是「进一个、出一个」；不定长窗口只有右端点固定每步 +1，左端点是否移动取决于窗口当前是否合法——合法就不动，不合法就一直右移直到重新合法。\n关键是左端点只增不减、永不回退。因此两个指针各自最多走 n 步，总复杂度仍然是 O(n)，而不是 O(n²)。"
+    },
+    {
+      h: "三步模板（背下来，10 题通用）",
+      p: "① r 从左到右扫，把 nums[r] 放进窗口，维护计数 / 和 / 哈希表。\n② while (窗口不合法) 把 nums[l] 移出窗口，然后 l++。\n③ 退出 while 时 [l, r] 一定合法，并且是「以 r 结尾的所有合法窗口里最长的那个」，用它更新答案。",
+      formula: "for r in 0..n-1:\n    add(nums[r])\n    while (!valid()) { remove(nums[l]); l++; }\n    ans = max(ans, r - l + 1);   // 注意：在 while 之外更新"
+    },
+    {
+      h: "为什么第 ③ 步拿到的就是最长",
+      p: "while 一退出就说明 [l, r] 合法；而它上一轮循环里 [l-1, r] 是不合法的——也就是说左端点再往左挪一格就会破坏条件。所以 l 已经是能取到的最大左端点，[l, r] 就是「以 r 结尾的最长合法窗口」。对所有 r 取最大，就是全局最长。\n这也顺带解释了一个常见疑问：为什么答案要在 while 退出之后更新，而不是在 while 里面更新——while 里面窗口正处于不合法状态，取长度只会偏大。"
+    },
+    {
+      h: "求最长 / 求最短 / 求个数，写法的位置不一样",
+      p: "本组 10 题全部是「越长越不合法 → 收缩到合法 → 取最长」这一类，答案在 while 之后结算。\n如果题目问「最短的合法窗口」（如 209. 长度最小的子数组），就要反过来：窗口满足条件时先在 while 里记录答案，再继续收缩。\n还有一类「求满足条件的子数组个数」：越长越合法时写 ans += left，越短越合法时写 ans += right − left + 1。这些在题单的进阶部分会陆续遇到，先把「最长」这一类打牢。"
+    },
+    {
+      h: "10 道题其实是同一份代码",
+      p: "把题目翻译成「窗口里某个统计量不能超过某个上限」，这个上限就是 while 的条件。剩下的部分（入窗、出窗、取长度）一模一样。下面两张表：一张是 10 道题的合法条件翻译，一张是和定长滑窗的对照。"
+    }
+  ],
+  codes: [
+    {
+      title: "写法：for + while（10 题通用骨架）",
+      code: "// ---------- 不定长滑窗 · 通用模板 ----------\nint n = nums.size(), l = 0;\nlong long ans = 0;\nunordered_map<int, int> cnt;      // 窗口内每个值出现的次数\n\nfor (int r = 0; r < n; ++r) {\n    // ① 右端点入窗\n    ++cnt[nums[r]];\n\n    // ② 窗口不合法就一直收缩左端点（这里以「最多 2 种」为例）\n    while ((int)cnt.size() > 2) {\n        if (--cnt[nums[l]] == 0) cnt.erase(nums[l]);\n        ++l;\n    }\n\n    // ③ 此时 [l, r] 合法，且是以 r 结尾的最长的合法窗口\n    ans = max(ans, (long long)(r - l + 1));\n}\nreturn ans;",
+    },
+    {
+      title: "对照：求最长 vs 求最短，答案写在哪",
+      code: "// 求「最长」：先收缩到合法，再取长度（本组 10 题都是这种）\nwhile (!valid()) { remove(nums[l]); ++l; }\nans = max(ans, r - l + 1);\n\n// 求「最短」：窗口还合法时先记录，再继续收缩\n// 例：209. 长度最小的子数组，求「和 >= target」的最短窗口\nwhile (sum >= target) {\n    ans = min(ans, r - l + 1);\n    sum -= nums[l];\n    ++l;\n}"
+    }
+  ],
+  tables: [
+    {
+      title: "10 道题的「合法条件」翻译表",
+      head: ["题号", "题目", "窗口里维护什么", "合法条件（while 的判断）"],
+      rows: [
+        ["3", "无重复字符的最长子串", "每个字符出现的次数", "每个字符 ≤ 1 次（窗口内无重复）"],
+        ["3090", "每个字符最多出现两次的最长子字符串", "每个字符出现的次数", "每个字符 ≤ 2 次"],
+        ["1493", "删掉一个元素以后全为 1 的最长子数组", "窗口内 0 的个数", "0 的个数 ≤ 1"],
+        ["3634", "使数组平衡的最少移除数目", "排序后的 <code>nums[l]</code> 与 <code>nums[r]</code>", "<code>nums[r] ≤ nums[l] × k</code>"],
+        ["1208", "尽可能使字符串相等", "累计转换代价", "代价 ≤ <code>maxCost</code>"],
+        ["904", "水果成篮", "水果种类数", "种类数 ≤ 2"],
+        ["1695", "删除子数组的最大得分", "窗口和 + 元素出现次数", "窗口内无重复元素"],
+        ["2958", "最多 K 个重复元素的最长子数组", "每个元素的出现次数", "每个元素 ≤ k 次"],
+        ["2024", "考试的最大困扰度", "T 与 F 各自的个数", "<code>min(cntT, cntF) ≤ k</code>"],
+        ["1004", "最大连续 1 的个数 III", "窗口内 0 的个数", "0 的个数 ≤ k"]
+      ]
+    },
+    {
+      title: "和定长滑窗的对照",
+      head: ["对比项", "定长滑动窗口", "不定长滑动窗口"],
+      rows: [
+        ["窗口长度", "恒为 k", "不固定：随 r 变大、随 l 收缩"],
+        ["指针移动", "左右端点同步 +1", "r 每步 +1，l 按需右移（只增不减）"],
+        ["循环结构", "一个 for 循环", "for + while 双层"],
+        ["答案位置", "每滑一步就结算", "while 退出之后结算（求最短时相反）"],
+        ["典型问法", "长度为 k 的…、半径为 k 的…", "最长 / 最多 / 至多 k 个…"]
+      ]
+    }
+  ],
+  pitfalls: [
+    "左端点不能回退：l 只增不减，这才是 O(n) 的原因；一旦让它往回挪，就退化成 O(n²)。",
+    "while 里必须同步更新统计量：移出 nums[l] 时计数要减、和要减，哈希表计数减到 0 要 <code>erase</code>，否则 valid() 永远判不准。",
+    "答案在 while 之外更新：while 里面窗口正处于不合法状态，取长度会偏大。只有「求最短」那一类才在 while 里更新。",
+    "空窗口的边界：当单个元素就违反条件时（例如 k = 0），要保证 l 不超过 r，否则会算出负长度。",
+    "「最多 k 个」和「恰好 k 个」不是一回事：前者直接收缩即可；后者要拆成两个「至少」再做差，即三指针写法。"
+  ],
+  links: [
+    { label: "题单原文：滑动窗口题单", href: "https://leetcode.cn/discuss/post/3578981/ti-dan-hua-dong-chuang-kou-ding-chang-bu-rzz7/" }
+  ]
+};
+
+var PROBLEMS = [
+{
+  id: "p1456",
+  num: "1456",
+  title: "定长子串中元音的最大数目",
+  en: "Maximum Number of Vowels in a Substring of Given Length",
+  rating: "难度分 1263",
+  link: "https://leetcode.cn/problems/maximum-number-of-vowels-in-a-substring-of-given-length/",
+  tag: "定长滑窗 · 计数",
+  oneLiner: "给你字符串 <b>s</b>（只含小写字母）和整数 <b>k</b>，返回 s 中长度为 k 的子串里，元音字母（a e i o u）个数的<b>最大值</b>。",
+  principle: "窗口里要维护的东西只有一样：当前这个长度 k 的子串里有几个元音，用一个 int 变量 cnt 存就够了。\n滑动的过程就是加减法：右边进来的字符是元音就 cnt + 1，左边出去的字符是元音就 cnt − 1。整个过程不需要重新数一遍窗口，所以每个元素只被访问常数次。\n因为子串长度固定为 k，全局答案必然是「某个窗口的元音数」，所以每滑一步就更新一次最大值即可。这道题是定长滑窗最好抄的模板：只剩一个计数变量，连哈希表都不用。",
+  formula: "cnt ← cnt + isVowel(s[i]) − isVowel(s[i − k])\nans = max(ans, cnt),  窗口区间为 [i − k + 1, i]",
+  demo: {
+    arr: ["a", "b", "c", "i", "i", "i", "d", "e", "f"],
+    rule: "maxVowel",
+    win: 3,
+    legend: "蓝色方块 = 当前长度为 3 的窗口；下标 i 从 k 开始，每次右边进一个字符、左边出一个字符。"
+  },
+  code: "class Solution {\npublic:\n    bool isVowel(char c) {\n        // 题目保证 s 只含小写字母，元音只有这 5 个\n        return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';\n    }\n\n    int maxVowels(string s, int k) {\n        int cnt = 0;\n        // 第一步：铺满第一个窗口 [0, k-1]，数出里面的元音个数\n        for (int i = 0; i < k; ++i)\n            if (isVowel(s[i])) ++cnt;\n        int ans = cnt;\n\n        // 第二步：窗口整体右移，右端点走到 i\n        for (int i = k; i < (int)s.size(); ++i) {\n            if (isVowel(s[i]))     ++cnt;   // 入队：s[i] 进入窗口\n            if (isVowel(s[i - k])) --cnt;   // 出队：s[i-k] 离开窗口\n            ans = max(ans, cnt);            // 此时窗口是 [i-k+1, i]，结算\n        }\n        return ans;\n    }\n};",
+  codeTitle: "1456_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "进的是 <code>s[i]</code>、出的是 <code>s[i - k]</code>，两个判断条件不要写反——写反了等于窗口原地踏步还乱加乱减。",
+    "窗口长度始终是 k，循环里不用再判断长度是否够，这也是定长滑窗比不定长滑窗好写的原因。",
+    "<code>s.size()</code> 的类型是无符号的 <code>size_t</code>，和 int 比较时建议写成 <code>(int)s.size()</code>，避免有符号/无符号比较告警。",
+    "k 可能等于 s 的长度，此时答案就是整个串的元音数，第一个循环已经把这个情况覆盖了。"
+  ],
+  related: "同类型延伸：1100. 长度为 K 的无重复字符子串（会员题）、1852. 每个子数组的数字种类数（会员题）。",
+  demoIntro: "下面用 s = abciiidef、k = 3 走一遍，看窗口里的元音数怎么变化。"
+},
+{
+  id: "p0643",
+  num: "643",
+  title: "子数组最大平均数 I",
+  en: "Maximum Average Subarray I",
+  rating: "难度分 基础（题单未标）",
+  link: "https://leetcode.cn/problems/maximum-average-subarray-i/",
+  tag: "定长滑窗 · 求和",
+  oneLiner: "找出长度为 <b>k</b> 的连续子数组，使它的平均数最大，返回这个<b>最大平均数</b>（与标准答案误差 10⁻⁵ 以内即可）。",
+  principle: "平均数 = 窗口和 ÷ k，而 k 是固定的，所以「平均数最大」与「窗口和最大」完全等价。窗口里只需要维护一个 long long 存和，滑一步加一个、减一个。\n这题的坑不在算法，在数值细节：一是除法只做最后一次，如果每滑一步都算一遍平均数再比较，浮点误差会累积、也比较慢；二是 (double)(best / k) 这种写法会先做整数除法再转 double，小数部分已经丢了，必须先转 double 再除。",
+  formula: "answer = max(所有长度 k 窗口的元素和) ÷ k",
+  demo: {
+    arr: [1, 12, -5, -6, 50, 3],
+    rule: "maxAvg",
+    win: 4,
+    legend: "蓝色方块 = 当前长度为 4 的窗口。窗口和最大的是 [12, -5, -6, 50] = 51，答案 51 ÷ 4 = 12.75。"
+  },
+  code: "class Solution {\npublic:\n    double findMaxAverage(vector<int>& nums, int k) {\n        long long s = 0;\n        // 第一个窗口 [0, k-1]\n        for (int i = 0; i < k; ++i) s += nums[i];\n        long long best = s;                       // 维护窗口和的最大值\n\n        for (int i = k; i < (int)nums.size(); ++i) {\n            s += nums[i] - nums[i - k];           // 进一个、出一个\n            best = max(best, s);                  // 滑完立刻更新\n        }\n        // 只在最后做一次除法；先转 double 再除，别写成 (double)(best / k)\n        return (double)best / k;\n    }\n};",
+  codeTitle: "643_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "<code>(double)(best / k)</code> 是先整数除法再转 double，小数被截断；正确写法是 <code>(double)best / k</code>。",
+    "不要每滑一步就算一次平均数，把「比较平均数」换成「比较和」，最后再除一次。",
+    "养成用 <code>long long</code> 存和的习惯：本题 n 最多 1e5、元素绝对值最多 1e4，总和约 1e9 还在 int 范围内，但后面 2461、2841 的题目会溢出 int，统一用 long long 就不用每次重新判断。",
+    "另一种等价写法是前缀和：<code>pre[i]</code> 表示前 i 项之和，窗口和 = <code>pre[i] - pre[i - k]</code>，时间 O(n) 但空间 O(n)，定长滑窗用变量滚动更优。"
+  ],
+  related: "同类型延伸：1343（把「平均值 ≥ 阈值」整化成「和 ≥ k × 阈值」）、2090（窗口长度为 2k+1 的变体）。",
+  demoIntro: "用 nums = [1,12,-5,-6,50,3]、k = 4 走一遍，对比每个窗口的和。"
+},
+{
+  id: "p1343",
+  num: "1343",
+  title: "大小为 K 且平均值大于等于阈值的子数组数目",
+  en: "Number of Sub-arrays of Size K and Average Greater than or Equal to Threshold",
+  rating: "难度分 1317",
+  link: "https://leetcode.cn/problems/number-of-sub-arrays-of-size-k-and-average-greater-than-or-equal-to-threshold/",
+  tag: "定长滑窗 · 求和 + 计数",
+  oneLiner: "给你数组 <b>arr</b>、整数 <b>k</b> 和 <b>threshold</b>，返回长度为 k 且平均值大于等于 threshold 的子数组<b>数目</b>。",
+  principle: "这道题的关键一步是「去浮点」：平均值 ≥ threshold 两边同乘 k（k 是正数，不等号方向不变），等价于「窗口和 ≥ k × threshold」。这样整个判断变成纯整数比较，既没有误差也更快。\n于是窗口里只需要维护一个 long long 存和；每滑一步，如果当前和 ≥ 目标值，计数器加一。答案是一个计数而不是最值，初值为 0。这类「窗口 + 判断 + 计数」的结构在题单的进阶部分（如 1052 爱生气的书店老板）也一直用。",
+  formula: "sum([i, i+k-1]) ≥ k × threshold   ⟺   窗口平均值 ≥ threshold\nanswer += (窗口和 ≥ k × threshold)",
+  demo: {
+    arr: [2, 2, 2, 2, 5, 5, 5, 8],
+    rule: "countGE",
+    win: 3,
+    threshold: 4,
+    legend: "目标：窗口和 ≥ 3 × 4 = 12 就计数。绿色方块表示这个窗口达标。"
+  },
+  code: "class Solution {\npublic:\n    int numOfSubarrays(vector<int>& arr, int k, int threshold) {\n        // 把「平均值 >= threshold」整化成「窗口和 >= k * threshold」，彻底绕开浮点\n        long long target = (long long)k * threshold;\n\n        long long s = 0;\n        for (int i = 0; i < k; ++i) s += arr[i];   // 第一个窗口\n        int ans = (s >= target) ? 1 : 0;           // 计数从第一个窗口开始\n\n        for (int i = k; i < (int)arr.size(); ++i) {\n            s += arr[i] - arr[i - k];              // 进一个、出一个\n            if (s >= target) ++ans;                // 达标就累加\n        }\n        return ans;\n    }\n};",
+  codeTitle: "1343_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "不要把 <code>threshold</code> 当浮点处理，题目里它就是整数，整化后的 <code>k * threshold</code> 也必须是整数比较。",
+    "<code>k * threshold</code> 最大 1e5 × 1e4 = 1e9，本身没超 int，但和后面的窗口和比较时统一用 <code>long long</code> 更省心。",
+    "threshold 可以等于 0，此时所有窗口都达标，答案是 <code>n - k + 1</code>，代码天然正确。",
+    "第一个窗口的贡献别忘了：如果只写在滑动循环里，会漏掉 [0, k-1] 这个窗口。"
+  ],
+  related: "同类型延伸：1052. 爱生气的书店老板（1418 分，在可用窗口内维护两套和）、2379（窗口里维护字符计数）。",
+  demoIntro: "用 arr = [2,2,2,2,5,5,5,8]、k = 3、threshold = 4 走一遍，目标是窗口和 ≥ 12。"
+},
+{
+  id: "p2090",
+  num: "2090",
+  title: "半径为 k 的子数组平均值",
+  en: "K Radius Subarray Averages",
+  rating: "难度分 1358",
+  link: "https://leetcode.cn/problems/k-radius-subarray-averages/",
+  tag: "定长滑窗 · 逐位置写回",
+  oneLiner: "返回数组 <b>avgs</b>：avgs[i] 是以 i 为中心、半径为 k 的子数组（下标 i−k 到 i+k，共 2k+1 个元素）的平均值；两边凑不满的置为 <b>-1</b>。",
+  principle: "还是定长滑窗，只是有两处变化：窗口长度不再是你给的参数，而是 2k+1；答案不再是一个最值，而是一个逐位置填回去的数组。\n把「右端点」和「中心」的关系理清就不难：右端点走到 r 时窗口是 [r − 2k, r]，它的中心恰好是 r − k，所以滑完一步就直接写 ans[r − k] = 窗口和 ÷ (2k+1)。第一个窗口是 [0, 2k]，中心就是 k。\n剩下的是边界：如果 2k+1 比整个数组还长，任何位置都凑不出窗口，直接返回全 -1 的数组；其余位置在初始化时已经是 -1，只需要覆盖能算出来的那部分。",
+  formula: "窗口长度 w = 2k + 1；右端点 r 时中心 i = r − k；avg[i] = 窗口和 ÷ w",
+  demo: {
+    arr: [7, 4, 3, 9, 1, 8, 5, 2, 6],
+    rule: "centeredAvg",
+    radius: 3,
+    legend: "橙色描边 = 当前中心位置，蓝色方块 = 以它为中心、半径 3 的窗口（7 个元素）。"
+  },
+  code: "class Solution {\npublic:\n    vector<int> getAverages(vector<int>& nums, int k) {\n        int n = nums.size();\n        int w = 2 * k + 1;                  // 窗口长度是 2k+1，不是 k\n        vector<int> ans(n, -1);             // 先全部填 -1，表示凑不出窗口\n        if (w > n) return ans;              // 边界：整个数组都放不下一个窗口\n\n        long long s = 0;\n        for (int i = 0; i < w; ++i) s += nums[i];   // 第一个窗口 [0, 2k]\n        ans[k] = (int)(s / w);                      // 它的中心正是下标 k\n\n        for (int r = w; r < n; ++r) {               // 窗口右移，右端点为 r\n            s += nums[r] - nums[r - w];             // 进一个、出一个\n            ans[r - k] = (int)(s / w);              // 中心 = 右端点 − k\n        }\n        return ans;\n    }\n};",
+  codeTitle: "2090_solution.cpp",
+  complexity: { time: "O(n)", space: "O(n)（返回数组本身）" },
+  pitfalls: [
+    "<code>2k + 1 &gt; n</code> 时必须提前返回，否则初始化窗口的循环会直接越界。",
+    "中心下标与右端点的关系是 <code>r - k</code>，很容易顺手写成 <code>r - w</code> 或 <code>r + k</code>，写完拿小数据验一遍。",
+    "返回值是 <code>vector&lt;int&gt;</code>，平均值要截断成整数；本题允许 1e-5 误差，而元素非负、取整误差不超过 1，所以直接整除即可。",
+    "注意 k 可以等于 0，此时窗口就是单个元素本身，代码不用特判。"
+  ],
+  related: "同类型延伸：1423（窗口本身位置固定、答案在两端）、643（窗口长度 k 的求和求最值）。",
+  demoIntro: "用 nums = [7,4,3,9,1,8,5,2,6]、k = 3 走一遍，看每个中心位置的平均值怎么算出来。"
+},
+{
+  id: "p2379",
+  num: "2379",
+  title: "得到 K 个黑块的最少涂色次数",
+  en: "Minimum Recolors to Get K Consecutive Black Blocks",
+  rating: "难度分 1360",
+  link: "https://leetcode.cn/problems/minimum-recolors-to-get-k-consecutive-black-blocks/",
+  tag: "定长滑窗 · 字符计数 + 反向思维",
+  oneLiner: "字符串 <b>blocks</b> 由 W（白）和 B（黑）组成，每次操作可把一个 W 涂成 B，返回得到<b>至少 k 个连续黑块</b>所需的最少操作次数。",
+  principle: "正向想很难——涂哪几个、涂几次都无从下手。把问题反过来看：最终那一段「连续 k 个黑块」在原串里一定对应着某个长度 k 的子串，我们就是把它填满黑的。\n于是枚举所有长度 k 的窗口，数出窗口里本来就有多少个黑块 b，那么把这个窗口全变黑需要 k − b 次涂色。要让次数最少，就让 b 最大：答案 = k − max(b)。\n窗口里维护的统计量是一个 int 计数，只不过加的是「这个字符是不是 'B'」的真值 0/1。这类「枚举窗口 + 用窗口内的现有资源算代价」的思路在进阶题 1052（爱生气的书店老板）里也是同一套。",
+  formula: "答案 = k − max(每个长度 k 窗口内 'B' 的个数)",
+  demo: {
+    arr: ["W", "B", "B", "W", "W", "B", "B", "W", "B", "W"],
+    rule: "minFlips",
+    win: 7,
+    legend: "蓝色方块 = 当前长度为 7 的窗口。窗口里黑块最多是 4 个，剩下 3 个白块就是最少涂色次数。"
+  },
+  code: "class Solution {\npublic:\n    int minimumRecolors(string blocks, int k) {\n        int cnt = 0;\n        // 第一个窗口 [0, k-1] 里有多少个黑块\n        for (int i = 0; i < k; ++i) cnt += (blocks[i] == 'B');\n        int best = cnt;                                  // 黑块个数的最大值\n\n        for (int i = k; i < (int)blocks.size(); ++i) {\n            // 比较表达式的真假转成 0/1 后直接参与加减，省掉两个 if\n            cnt += (blocks[i] == 'B') - (blocks[i - k] == 'B');\n            best = max(best, cnt);\n        }\n        // 窗口里剩下的白块全部涂黑\n        return k - best;\n    }\n};",
+  codeTitle: "2379_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "这道题的钥匙是反向思维：不要想「怎么涂最少」，而要想「最后那 k 个连续黑块对应原来的哪一段」。",
+    "维护的是「窗口里已有的黑块数」，答案是 <code>k - best</code>；如果改成维护白块数也行，那答案就是白块数的最小值，两种写法别混用。",
+    "题目里 W 表示白色、B 表示黑色，判断字符时别写反。",
+    "比较表达式 <code>(blocks[i] == 'B')</code> 的结果是 bool，转 int 后为 0/1，可以直接相减；觉得绕的话写成两个 if 也完全可以。"
+  ],
+  related: "同类型延伸：1456（窗口内计数求最大）、1151 / 2134 最少交换次数来组合所有的 1（会员题与 1748 分进阶）。",
+  demoIntro: "用 blocks = WBBWWBBWBW、k = 7 走一遍，看每个窗口里的黑块数。"
+},
+{
+  id: "p2841",
+  num: "2841",
+  title: "几乎唯一子数组的最大和",
+  en: "Maximum Sum of Almost Unique Subarray",
+  rating: "难度分 1546",
+  link: "https://leetcode.cn/problems/maximum-sum-of-almost-unique-subarray/",
+  tag: "定长滑窗 · 求和 + 哈希去重",
+  oneLiner: "给你数组 <b>nums</b> 和两个正整数 <b>m</b>、<b>k</b>，返回所有长度为 k 且<b>至少含 m 个互不相同的元素</b>的子数组里，元素和的<b>最大值</b>；不存在则返回 0。",
+  principle: "这题是两个条件的叠加：长度必须恰好是 k（定长滑窗），同时窗口里不同元素的种类数要 ≥ m（需要哈希表）。\n所以窗口里要同时维护两样东西：元素和 s（一个 long long），以及每个值出现了几次（unordered_map，值到出现次数的映射）。滑一步就是新元素计数加一、旧元素计数减一；关键细节是：某个值的计数减到 0 时必须把这个键从哈希表里删掉，这样 cnt.size() 才真正等于「窗口中不同元素的种类数」，否则它会统计到早已离开窗口的值。\n每个窗口都检查 cnt.size() ≥ m，满足条件的才拿 s 去更新答案。因为元素都是正整数，一个满足条件的窗口一旦存在答案就是正的，所以答案初值取 0 恰好也能满足「不存在就返回 0」的要求。",
+  formula: "维护：s = 窗口元素和，cnt = {值: 出现次数}\nif (cnt.size() ≥ m)  ans = max(ans, s)",
+  demo: {
+    arr: [2, 6, 7, 3, 1, 7],
+    rule: "almostUnique",
+    win: 4,
+    m: 3,
+    legend: "蓝色 = 当前窗口；达标（不同元素 ≥ 3 种）时变绿。三个窗口的和分别是 18、17、18，答案是 18。"
+  },
+  code: "class Solution {\npublic:\n    long long maxSum(vector<int>& nums, int m, int k) {\n        long long s = 0;                 // 窗口元素和\n        long long ans = 0;               // 元素都为正，不存在时正好返回 0\n        unordered_map<int, int> cnt;      // 值 -> 在窗口中出现次数，size() 即种类数\n\n        for (int i = 0; i < (int)nums.size(); ++i) {\n            s += nums[i];                 // 右指针入队\n            ++cnt[nums[i]];\n\n            if (i < k - 1) continue;      // 窗口还不满 k 个，不结算\n\n            // 此时窗口恰好是 [i-k+1, i]，先判条件再更新答案\n            if ((int)cnt.size() >= m) ans = max(ans, s);\n\n            // 左指针出队，为下一步滑动做准备\n            int out = i - k + 1;\n            s -= nums[out];\n            if (--cnt[nums[out]] == 0) cnt.erase(nums[out]);   // 计数归零必须删键\n        }\n        return ans;\n    }\n};",
+  codeTitle: "2841_solution.cpp",
+  complexity: { time: "O(n)", space: "O(k)（哈希表最多存 k 种值）" },
+  pitfalls: [
+    "元素值最大到 1e9，开不了计数数组，必须用 <code>unordered_map</code>。",
+    "计数减到 0 一定要 <code>erase</code>，这是本题最容易错的地方：只减不删，<code>cnt.size()</code> 会一直偏大，很多本该不达标的窗口会被误判为达标。",
+    "结算顺序：先判 <code>i &lt; k - 1</code> 跳过窗口未成形的前几步，否则会拿长度不足 k 的窗口去更新答案。",
+    "答案初值 0 依赖「元素都是正整数」这一条件；如果元素可能为负，就需要单独用变量记录是否找到过合法窗口。",
+    "元素和要用 <code>long long</code>。"
+  ],
+  related: "同类型延伸：2461（把条件换成「恰好 k 种」，骨架完全一致）、2953. 统计完全子字符串（2449 分，定长滑窗 + 字符计数）。",
+  demoIntro: "用 nums = [2,6,7,3,1,7]、m = 3、k = 4 走一遍，盯着「不同元素种类数」这个绿色统计量。"
+},
+{
+  id: "p2461",
+  num: "2461",
+  title: "长度为 K 子数组中的最大和",
+  en: "Maximum Sum of Distinct Subarrays With Length K",
+  rating: "难度分 1553",
+  link: "https://leetcode.cn/problems/maximum-sum-of-distinct-subarrays-with-length-k/",
+  tag: "定长滑窗 · 求和 + 哈希去重",
+  oneLiner: "返回 <b>nums</b> 中所有长度为 k 且<b>元素互不相同</b>的子数组的元素和的最大值；如果不存在这样的子数组，返回 0。",
+  principle: "骨架和 2841（几乎唯一子数组的最大和）一模一样，只把条件从「至少 m 种」换成「恰好 k 种」。\n理解「元素互不相同」在窗口语境下等价于什么，是这题的要点：窗口长度固定为 k，那么「不同元素种类数恰好等于 k」就意味着每个元素都只出现一次，也就是互不相同。所以判断条件写成 cnt.size() == k 即可，不需要再去单独统计重复次数。\n元素都是正数，所以合法窗口的和一定是正的，答案初值取 0 就同时满足了「不存在返回 0」的要求。",
+  formula: "if (cnt.size() == k)  ans = max(ans, s)      // 窗口长 k，种类数 == k ⟺ 元素两两不同",
+  demo: {
+    arr: [1, 5, 4, 2, 9, 9, 9],
+    rule: "distinctK",
+    win: 3,
+    legend: "蓝色 = 当前窗口；窗口内三个元素互不相同时变绿。前三个窗口分别是 10、11、15，答案是 15。"
+  },
+  code: "class Solution {\npublic:\n    long long maximumSubarraySum(vector<int>& nums, int k) {\n        long long s = 0;                // 窗口元素和（1e5 个 1e5 相加会超 int）\n        long long ans = 0;\n        unordered_map<int, int> cnt;     // 值 -> 出现次数\n\n        for (int i = 0; i < (int)nums.size(); ++i) {\n            s += nums[i];\n            ++cnt[nums[i]];              // 右指针入队\n\n            if (i < k - 1) continue;     // 窗口还不满 k 个\n\n            // 窗口 [i-k+1, i]：种类数恰好为 k 说明 k 个元素互不相同\n            if ((int)cnt.size() == k) ans = max(ans, s);\n\n            int out = i - k + 1;         // 左指针出队\n            s -= nums[out];\n            if (--cnt[nums[out]] == 0) cnt.erase(nums[out]);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "2461_solution.cpp",
+  complexity: { time: "O(n)", space: "O(k)" },
+  pitfalls: [
+    "条件是 <code>cnt.size() == k</code>，不是 <code>&gt;= k</code>；窗口长度本身是 k，种类数不可能超过 k。",
+    "另一种等价写法：维护「窗口内重复元素的个数 dup」（某个值出现第 2 次时 dup 加一，它离开时若还有残留则 dup 减一），再判 <code>dup == 0</code>。思路可以了解，但哈希表写法更不容易错。",
+    "答案用 <code>long long</code>：n 可达 1e5、元素可达 1e5，最大和可达 1e10。",
+    "<code>erase</code> 同样不能省，否则重复元素离场后种类数仍然偏大，会把非法的窗口算进去。"
+  ],
+  related: "同类型延伸：2841（至少 m 种）、1100（长度为 K 的无重复字符子串，会员题）。",
+  demoIntro: "用 nums = [1,5,4,2,9,9,9]、k = 3 走一遍，看后两个窗口为什么被淘汰。"
+},
+{
+  id: "p1423",
+  num: "1423",
+  title: "可获得的最大点数",
+  en: "Maximum Points You Can Obtain from Cards",
+  rating: "难度分 1574",
+  link: "https://leetcode.cn/problems/maximum-points-you-can-obtain-from-cards/",
+  tag: "定长滑窗 · 逆向转化",
+  oneLiner: "几张卡牌排成一行，每次只能从<b>行首或行尾</b>取一张，一共取 <b>k</b> 张，返回能获得的最大点数。",
+  principle: "这题的难点不在滑窗，而在「转化」这一步。直接枚举「左边取 i 张、右边取 k − i 张」也能做，但要拼前缀和后缀两段，写起来啰嗦。\n换个角度：取走的 k 张牌只可能来自两端，那么<b>剩下的 n − k 张牌必然是中间连续的一段</b>。于是「两端取 k 张的最大点数」等价于「总和 − 中间连续 n − k 张的最小和」。\n问题瞬间变成了一道最标准的定长滑窗：窗口长度为 n − k，求窗口和的最小值。唯一要特判的是 k == n，此时中间窗口长度为 0，直接返回总和。这种「求最大 → 等价于求最小」的对偶转化是这题最值得记住的地方。",
+  formula: "answer = total − min(所有长度为 n − k 的连续子数组之和)\n其中 total 是全部卡牌点数之和",
+  demo: {
+    arr: [1, 2, 3, 4, 5, 6, 1],
+    rule: "maxPoints",
+    k: 3,
+    legend: "橙色虚线 = 被取走的两端卡牌；蓝色 = 中间剩下的 n−k = 4 张连续卡牌。橙色部分的总点数 = 总和 − 蓝色最小和。"
+  },
+  code: "class Solution {\npublic:\n    int maxScore(vector<int>& cardPoints, int k) {\n        int n = cardPoints.size();\n        int w = n - k;                       // 中间剩下的牌数，也就是窗口长度\n\n        long long total = 0;\n        for (int x : cardPoints) total += x;\n        if (w == 0) return (int)total;        // 边界：k == n，全部拿走\n\n        // 在中间找一段长度为 w 的子数组，使它的和最小\n        long long s = 0;\n        for (int i = 0; i < w; ++i) s += cardPoints[i];\n        long long mn = s;\n\n        for (int i = w; i < n; ++i) {\n            s += cardPoints[i] - cardPoints[i - w];\n            mn = min(mn, s);\n        }\n        // 取走两端 = 总和 − 中间留下的最小和\n        return (int)(total - mn);\n    }\n};",
+  codeTitle: "1423_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "<code>w == 0</code>（即 k == n）必须单独返回总和：否则初始化循环一次都不执行，<code>mn</code> 还停在 0，答案会错成总和甚至负值。",
+    "先把「为什么剩下的牌是连续的一段」想明白，再动笔，否则很容易写成枚举 + 前后缀拼接，代码量翻倍。",
+    "结果用 <code>long long</code> 算完再转 int；本题和不会溢出 int，但保持习惯。",
+    "另一种等价写法是前缀和：<code>pre[i]</code> 表示前 i 张之和，左边取 i 张、右边取 k−i 张的得分是 pre[i] + (pre[n] − pre[n − (k − i)])，枚举 i 从 0 到 k 取最大，时间 O(k)。可以作为对拍验证。"
+  ],
+  related: "同类型延伸：2090（窗口位置跟着中心走）、1652. 拆炸弹（环形数组上的定长滑窗）、2653. 滑动子数组的美丽值（1786 分）。",
+  demoIntro: "用 cardPoints = [1,2,3,4,5,6,1]、k = 3 走一遍，看中间的 4 张牌怎么滑动。"
+},
+{
+  id: "p0003",
+  group: "var",
+  num: "3",
+  title: "无重复字符的最长子串",
+  en: "Longest Substring Without Repeating Characters",
+  rating: "难度分 基础（题单未标）",
+  link: "https://leetcode.cn/problems/longest-substring-without-repeating-characters/",
+  tag: "不定长滑窗 · 字符计数",
+  oneLiner: "给定字符串 <b>s</b>，返回其中<b>不含重复字符</b>的最长子串的长度。",
+  principle: "窗口里维护每个字符出现的次数。右端点每进来一个字符，只有「刚进来的这个字符」才可能造成重复——因为上一步的窗口已经是合法的。所以 while 条件可以直接写成 cnt[s[r]] > 1，比通用的「窗口内有没有重复」判断更快也更简洁。\n收缩时同步把 s[l] 的计数减掉再 l++，直到新字符只出现一次为止，退出 while 后 [l, r] 就是一个以 r 结尾、无重复的窗口，用它的长度更新答案。\n这是不定长滑窗最经典的入门题：框架不难，难在想到「不合法的充要条件是 cnt[s[r]] > 1」。想通这一点，3090 和 2958 就是把 1 换成 2 和 k。",
+  formula: "while (cnt[s[r]] > 1) { --cnt[s[l]]; ++l; }\nans = max(ans, r − l + 1)",
+  demo: {
+    mode: "var",
+    rule: "varNoRepeat",
+    arr: ["a", "b", "c", "a", "b", "c", "b", "b"],
+    legend: "蓝色 = 当前窗口 [l, r]；绿色 = 这一步刷新了答案。"
+  },
+  code: "class Solution {\npublic:\n    int lengthOfLongestSubstring(string s) {\n        int cnt[128] = {0};          // 每个字符在当前窗口中出现的次数\n        int ans = 0, l = 0;\n\n        for (int r = 0; r < (int)s.size(); ++r) {\n            ++cnt[s[r]];             // 右端点入窗\n\n            // 只有刚进来的字符可能重复，所以只判它的计数\n            while (cnt[s[r]] > 1) {\n                --cnt[s[l]];         // 左端点出窗\n                ++l;\n            }\n            // 此时 [l, r] 无重复，且是以 r 结尾的最长合法窗口\n            ans = max(ans, r - l + 1);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "3_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)（字符集固定 128）" },
+  pitfalls: [
+    "while 条件只判 <code>cnt[s[r]] &gt; 1</code>：其他字符的计数在这一步没变，不可能突然重复，这样能省掉扫描整个窗口。",
+    "收缩时先减计数再 <code>++l</code>，顺序反了会减到 <code>s[l+1]</code> 头上。",
+    "答案要写 <code>r - l + 1</code>，别漏掉 +1（窗口长度 = 右端点 − 左端点 + 1）。",
+    "字符串可能为空，此时循环不执行、返回 0，代码天然正确。"
+  ],
+  related: "同类型延伸：3090（上限从 1 次放宽到 2 次）、2958（上限变成 k 次）、1100. 长度为 K 的无重复字符子串（会员题，定长版）。",
+  demoIntro: "用 s = abcabcbb 走一遍，注意第 4 步 a 第二次出现时 l 被推到了 1。"
+},
+{
+  id: "p3090",
+  group: "var",
+  num: "3090",
+  title: "每个字符最多出现两次的最长子字符串",
+  en: "Longest Substring with At Most Two Occurrences of Each Character",
+  rating: "难度分 1329",
+  link: "https://leetcode.cn/problems/longest-substring-with-at-most-two-occurrences-of-each-character/",
+  tag: "不定长滑窗 · 字符计数",
+  oneLiner: "返回 <b>s</b> 中「每个字符最多出现两次」的最长子字符串的长度。",
+  principle: "和 3（无重复字符的最长子串）完全同构，只把上限从 1 次改成 2 次：while 条件变成 cnt[s[r]] > 2。\n这里可以再确认一次「为什么只检查新进来的字符」：窗口在每一步开始时都是合法的（上一步已经收缩到合法），而这一步只有 s[r] 的计数增加了，其他字符的计数都没变，所以不可能出现别的字符超限。\n这类「窗口内每个元素的出现次数不超过某个上限」的题，模板完全一致：把 2 换成 k 就是 2958（最多 K 个重复元素），把字符换成整数也照样成立。",
+  formula: "while (cnt[s[r]] > 2) { --cnt[s[l]]; ++l; }\nans = max(ans, r − l + 1)",
+  demo: {
+    mode: "var",
+    rule: "varTwoOcc",
+    arr: ["b", "c", "b", "b", "b", "c", "b", "a"],
+    legend: "蓝色 = 当前窗口；绿色 = 这一步刷新了答案。注意第 4 个 b 进来后要连续收缩两次。"
+  },
+  code: "class Solution {\npublic:\n    int maximumLengthSubstring(string s) {\n        int cnt[128] = {0};              // 每个字符的出现次数\n        int ans = 0, l = 0;\n\n        for (int r = 0; r < (int)s.size(); ++r) {\n            ++cnt[s[r]];                 // 右端点入窗\n\n            while (cnt[s[r]] > 2) {      // 新字符超过 2 次就收缩\n                --cnt[s[l]];\n                ++l;\n            }\n            ans = max(ans, r - l + 1);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "3090_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)（字符集固定）" },
+  pitfalls: [
+    "上限是「最多 2 次」，所以 while 要写 <code>&gt; 2</code>，不是 <code>&gt;= 2</code>。",
+    "只有 26 个小写字母时，用 <code>int cnt[26]</code> 配 <code>cnt[s[r] - 'a']</code> 更快；用 128 的数组可以兼容大小写和数字，二选一都行。",
+    "本题与第 3 题是同一份代码，只差一个常数；把 2 抽成变量就同时解掉 2958。",
+    "数组下标直接写 <code>s[r]</code> 依赖 char 转 unsigned char 的行为，安全起见可写 <code>(unsigned char)s[r]</code>。"
+  ],
+  related: "同类型延伸：3（上限为 1）、2958（上限为 k，元素换成整数）、1004（0 的个数 ≤ k）。",
+  demoIntro: "用 s = bcbbbcba 走一遍，观察 b 反复进来时 l 的连续右移。"
+},
+{
+  id: "p1493",
+  group: "var",
+  num: "1493",
+  title: "删掉一个元素以后全为 1 的最长子数组",
+  en: "Longest Subarray of 1's After Deleting One Element",
+  rating: "难度分 1423",
+  link: "https://leetcode.cn/problems/longest-subarray-of-1s-after-deleting-one-element/",
+  tag: "不定长滑窗 · 计数 + 答案差一",
+  oneLiner: "二进制数组 <b>nums</b>，<b>必须删掉一个元素</b>，返回删除后最长的全 1 子数组的长度；不存在则返回 0。",
+  principle: "先做一步转化：删掉一个元素后得到的一段连续 1，对应原数组里「最多包含一个 0」的一段连续区间。所以窗口的合法条件就是「窗口内 0 的个数 ≤ 1」，用 zeros 计数即可。\n接下来是这题唯一但致命的细节：答案不是窗口长度。如果窗口里有 1 个 0，删掉它得到 len−1 个 1；如果窗口里一个 0 都没有（全 1），题目要求必须删一个，拿到的还是 len−1 个 1。两种情况统一写 r − l，而不是 r − l + 1。\n很多人就是在这里写成了 r−l+1，于是在 [1,1,1] 这种用例上返回 3（正确答案是 2）。",
+  formula: "合法：窗口内 0 的个数 ≤ 1\nans = max(ans, r − l)      // 注意：不是 r − l + 1",
+  demo: {
+    mode: "var",
+    rule: "varOneZero",
+    arr: [1, 1, 0, 1, 1, 1, 0, 1],
+    legend: "蓝色 = 当前窗口；绿色 = 这一步刷新了答案。窗口里最多只能有 1 个 0。"
+  },
+  code: "class Solution {\npublic:\n    int longestSubarray(vector<int>& nums) {\n        int n = nums.size(), l = 0, zeros = 0, ans = 0;\n\n        for (int r = 0; r < n; ++r) {\n            zeros += (nums[r] == 0);      // 右端点是 0 就记一笔\n\n            while (zeros > 1) {           // 最多允许 1 个 0（那个就是被删掉的）\n                zeros -= (nums[l] == 0);\n                ++l;\n            }\n            // 窗口长度减 1 = 删掉一个元素后剩下的 1 的个数\n            ans = max(ans, r - l);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "1493_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "答案写 <code>r - l</code> 而不是 <code>r - l + 1</code>：这一个字符的差别就是本题的核心坑（全 1 时必须删一个）。",
+    "题目要求「必须删掉一个元素」，所以全 1 数组的答案是 n−1，不是 n。",
+    "zeros 的进出都要更新：进窗 <code>zeros += (nums[r] == 0)</code>，出窗 <code>zeros -= (nums[l] == 0)</code>。",
+    "数组全是 0 时答案 0，代码天然正确（每个窗口长度都 ≤ 1，r−l 取到 0）。"
+  ],
+  related: "同类型延伸：1004（把「删 1 个」换成「翻 k 个」，答案就不用减 1）、2024（最多改 k 个字符）。",
+  demoIntro: "用 nums = [1,1,0,1,1,1,0,1] 走一遍，看第二个 0 进来时 l 怎么被推走。"
+},
+{
+  id: "p3634",
+  group: "var",
+  num: "3634",
+  title: "使数组平衡的最少移除数目",
+  en: "Minimum Removals to Balance Array",
+  rating: "难度分 1453",
+  link: "https://leetcode.cn/problems/minimum-removals-to-balance-array/",
+  tag: "排序 + 不定长滑窗",
+  oneLiner: "若数组的<b>最大值至多是最小值的 k 倍</b>则称其平衡。可以移除任意多个元素（但不能删空），返回使剩余数组平衡的<b>最少移除数目</b>。",
+  principle: "这题的钥匙不在滑窗，而在排序。移除哪些元素与它们的原始顺序无关，所以先把 nums 排序；排序之后，「最大值 ≤ 最小值 × k」的一组元素一定对应数组里连续的一段区间——滑窗才有得框。\n于是问题变成：在排序后的数组里找最长的连续段，使 nums[r] ≤ nums[l] × k。剩下的元素全部移除，答案 = n − 最长段长度。\n比较时一定要转 long long：nums[l] 最大 1e9、k 最大 1e5，乘积能到 1e14，用 int 会溢出成负数，导致条件永远成立、答案永远是 0。\n注意这题和另外 9 题的区别：窗口考察的是排序**之后**的下标，所以动画里的数组是排好序的。",
+  formula: "排序后：while (nums[r] > nums[l] × k) ++l;\nans = n − max(r − l + 1)",
+  demo: {
+    mode: "var",
+    rule: "varBalance",
+    arr: [1, 2, 5],
+    k: 2,
+    legend: "数组已按题意排序（原 nums = [2,1,5]）；蓝色 = 当前平衡段，绿色 = 刷新了最长长度。"
+  },
+  code: "class Solution {\npublic:\n    int minRemoval(vector<int>& nums, int k) {\n        sort(nums.begin(), nums.end());   // 排序后，留下的元素一定是一段连续区间\n        int n = nums.size(), l = 0, best = 0;\n\n        for (int r = 0; r < n; ++r) {\n            // 最大值超过最小值的 k 倍就收缩左端点\n            // 注意转 long long：1e9 * 1e5 = 1e14，int 会溢出\n            while ((long long)nums[r] > (long long)nums[l] * k) ++l;\n            best = max(best, r - l + 1);\n        }\n        // 其余元素全部移除\n        return n - best;\n    }\n};",
+  codeTitle: "3634_solution.cpp",
+  complexity: { time: "O(n log n)（排序为主）", space: "O(1)（不计排序栈）" },
+  pitfalls: [
+    "必须排序：不排序的话「留下哪些元素」不是连续区间，滑窗根本用不上。",
+    "乘法必须转 <code>long long</code>：<code>1e9 × 1e5 = 1e14</code>，<code>int</code> 溢出成负数后条件恒成立，答案会错成 0。",
+    "答案是 <code>n - 最长平衡段</code>，别直接返回最长段长度。",
+    "k ≥ 1，所以单个元素永远平衡，答案至少是 0、不会出现「删空」。"
+  ],
+  related: "同类型延伸：1838. 最高频元素的频数（同样是排序 + 滑窗）、1493（窗口条件是「某种计数 ≤ 1」）。",
+  demoIntro: "用 nums = [2,1,5]、k = 2 走一遍（数组已排序成 [1,2,5]）。"
+},
+{
+  id: "p1208",
+  group: "var",
+  num: "1208",
+  title: "尽可能使字符串相等",
+  en: "Get Equal Substrings Within Budget",
+  rating: "难度分 1497",
+  link: "https://leetcode.cn/problems/get-equal-substrings-within-budget/",
+  tag: "不定长滑窗 · 代价和",
+  oneLiner: "两个等长字符串 <b>s</b>、<b>t</b>，把 s[i] 变成 t[i] 的代价是 |s[i] − t[i]|，总预算 <b>maxCost</b>，返回在预算内能把 s 的某个子串变成 t 对应子串的<b>最长长度</b>。",
+  principle: "建模比代码重要：先把「每个位置的转换代价」算出来，问题立刻就变成「在代价数组里找和 ≤ maxCost 的最长子数组」——和 1004（0 的个数 ≤ k）是同一个模型，只是「个数」换成了「和」。\n窗口里维护累计代价 cost：右端点进来就加上 |s[r]−t[r]|，超预算就不断把左端的代价减掉并 l++。退出 while 后窗口一定在预算内，用长度更新答案。\n这个「把差异换算成一个数字，再对数字做滑窗」的思路，在 1423、1695 这类题里会反复出现。",
+  formula: "cost = Σ |s[i] − t[i]|，i ∈ [l, r]\nwhile (cost > maxCost) { cost −= |s[l] − t[l]|; ++l; }",
+  demo: {
+    mode: "var",
+    rule: "varCost",
+    arr: [1, 1, 1, 2],
+    maxCost: 3,
+    legend: "演示数组是每一位的转换代价（s = abcd、t = bcdf，代价 1,1,1,2）；蓝色 = 当前窗口，绿色 = 刷新了答案。"
+  },
+  code: "class Solution {\npublic:\n    int equalSubstring(string s, string t, int maxCost) {\n        int n = s.size(), l = 0, cost = 0, ans = 0;\n\n        for (int r = 0; r < n; ++r) {\n            cost += abs(s[r] - t[r]);      // 第 r 位的转换代价进窗\n\n            while (cost > maxCost) {       // 超预算就一直收缩\n                cost -= abs(s[l] - t[l]);\n                ++l;\n            }\n            ans = max(ans, r - l + 1);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "1208_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "先在脑子里把「字符差异」换算成「每个位置一个数字」，不要在字符上做文章。",
+    "cost 是「当前窗口的代价」，出窗时必须减 <code>abs(s[l] - t[l])</code>，不是减 s[r]。",
+    "maxCost 可以为 0，此时只能保留代价全为 0 的位置，答案可能为 0。",
+    "char 参与算术会自动提升为 int，<code>abs(s[r] - t[r])</code> 直接写即可。"
+  ],
+  related: "同类型延伸：1004（限制「个数」而非「和」）、1423（窗口和的最小值）、1695（窗口和的最大值）。",
+  demoIntro: "用 s = abcd、t = bcdf、maxCost = 3 走一遍，代价数组是 [1,1,1,2]。"
+},
+{
+  id: "p0904",
+  group: "var",
+  num: "904",
+  title: "水果成篮",
+  en: "Fruit Into Baskets",
+  rating: "难度分 1516",
+  link: "https://leetcode.cn/problems/fruit-into-baskets/",
+  tag: "不定长滑窗 · 种类数上限",
+  oneLiner: "只有两个篮子、每个篮子只能装一种水果，从任意一棵树开始沿路每棵摘一个，遇到第三种水果就必须停，返回最多能摘的<b>果树数量</b>。",
+  principle: "把 fruits 看成一个数组，题目立刻变成：「最长子数组，且不同元素种类数 ≤ 2」。窗口里用哈希表维护每个种类出现的次数，cnt.size() 就是种类数。\n超过 2 种就收缩：把 fruits[l] 移出窗口、计数减一，减到 0 时必须 erase——否则 cnt.size() 不会变小，while 会变成死循环。\n这就是「种类数上限为常数」的标准题。把 2 换成任意数 k，就是「最多 k 种不同元素」的模板；把上限去掉、改成「每个元素最多 k 次」，就是 2958。",
+  formula: "while (cnt.size() > 2) { if (--cnt[fruits[l]] == 0) cnt.erase(fruits[l]); ++l; }\nans = max(ans, r − l + 1)",
+  demo: {
+    mode: "var",
+    rule: "varTwoKinds",
+    arr: [1, 2, 3, 2, 2],
+    legend: "蓝色 = 当前窗口（最多两种水果）；绿色 = 刷新了答案。第 3 步出现第三种水果时会连续收缩。"
+  },
+  code: "class Solution {\npublic:\n    int totalFruit(vector<int>& fruits) {\n        unordered_map<int, int> cnt;      // 种类 -> 个数\n        int ans = 0, l = 0;\n\n        for (int r = 0; r < (int)fruits.size(); ++r) {\n            ++cnt[fruits[r]];             // 右端点入窗\n\n            while ((int)cnt.size() > 2) { // 篮子只有两个\n                // 出窗时计数归零必须删键，否则 size() 永远降不下来\n                if (--cnt[fruits[l]] == 0) cnt.erase(fruits[l]);\n                ++l;\n            }\n            ans = max(ans, r - l + 1);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "904_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)（哈希表最多 3 种）" },
+  pitfalls: [
+    "计数减到 0 必须 <code>erase</code>，否则 <code>cnt.size()</code> 永远不降，while 直接死循环。",
+    "「两个篮子」= 最多两种水果，不是「每种水果最多两个」。",
+    "答案是窗口长度（连续果树的棵数），不是种类数。",
+    "fruits 长度为 1 时返回 1，代码天然正确。"
+  ],
+  related: "同类型延伸：3（种类数上限为 1 的字符版）、2958（上限换成「每个元素出现次数 ≤ k」）。",
+  demoIntro: "用 fruits = [1,2,3,2,2] 走一遍，看第三种水果出现时窗口怎么让出左边。"
+},
+{
+  id: "p1695",
+  group: "var",
+  num: "1695",
+  title: "删除子数组的最大得分",
+  en: "Maximum Erasure Value",
+  rating: "难度分 1529",
+  link: "https://leetcode.cn/problems/maximum-erasure-value/",
+  tag: "不定长滑窗 · 求和 + 去重",
+  oneLiner: "删除一个<b>不含重复元素</b>的子数组，得分就是这个子数组的元素和，返回能获得的<b>最大得分</b>。",
+  principle: "这题删掉的子数组就是原数组里连续的一段，所以完全等价于求「不含重复元素的子数组的最大和」。\n窗口里同时维护两样：元素和 s，以及每个元素的出现次数。一旦新进来的元素重复，就收缩左端点直到窗口重新无重复，然后用 s 更新答案。\n一个容易误解的点：这里更新的必须是和，不能只看长度。虽然元素都是正数、通常越长和越大，但代码按和更新才是严谨的写法——如果元素可能为负，长度最大与和最大就不是一回事了。\n和第 3 题（无重复字符的最长子串）相比，只是把「返回长度」换成「返回和」，骨架一模一样。",
+  formula: "合法：窗口内无重复元素\nans = max(ans, 窗口和 s)",
+  demo: {
+    mode: "var",
+    rule: "varDistinctSum",
+    arr: [4, 2, 4, 5, 6],
+    legend: "蓝色 = 当前无重复窗口；绿色 = 刷新了最大得分。第 3 步第二个 4 进来时要收缩。"
+  },
+  code: "class Solution {\npublic:\n    int maximumUniqueSubarray(vector<int>& nums) {\n        unordered_map<int, int> cnt;   // 值 -> 出现次数\n        int ans = 0, s = 0, l = 0;\n\n        for (int r = 0; r < (int)nums.size(); ++r) {\n            s += nums[r];              // 右端点入窗：和、计数一起更新\n            ++cnt[nums[r]];\n\n            while (cnt[nums[r]] > 1) { // 只有新元素可能重复\n                s -= nums[l];\n                if (--cnt[nums[l]] == 0) cnt.erase(nums[l]);\n                ++l;\n            }\n            ans = max(ans, s);         // 按「和」更新，不是按长度\n        }\n        return ans;\n    }\n};",
+  codeTitle: "1695_solution.cpp",
+  complexity: { time: "O(n)", space: "O(n)（哈希表最多存窗口内的值）" },
+  pitfalls: [
+    "答案是窗口和，不是窗口长度。",
+    "收缩时 <code>s</code> 和计数要一起更新，只减一个就会错。",
+    "元素都是正数，所以「和最大」与「尽量长」在这题里通常一致；但按和更新才是不依赖正负性的写法。",
+    "本题用 <code>cnt[nums[r]] &gt; 1</code> 判断，不依赖 <code>size()</code>，<code>erase</code> 可以省；保留它是个好习惯。"
+  ],
+  related: "同类型延伸：3（同样的去重窗口，求长度）、2841 / 2461（定长版，窗口和 + 去重）。",
+  demoIntro: "用 nums = [4,2,4,5,6] 走一遍，注意和 s 与窗口长度不是同步增长的。"
+},
+{
+  id: "p2958",
+  group: "var",
+  num: "2958",
+  title: "最多 K 个重复元素的最长子数组",
+  en: "Length of Longest Subarray With at Most K Frequency",
+  rating: "难度分 1535",
+  link: "https://leetcode.cn/problems/length-of-longest-subarray-with-at-most-k-frequency/",
+  tag: "不定长滑窗 · 频次上限",
+  oneLiner: "给你整数数组 <b>nums</b> 和整数 <b>k</b>，返回「每个元素最多出现 k 次」的最长子数组的<b>长度</b>。",
+  principle: "和第 3 题、3090 是同一个模板，只是上限从 1、2 变成了参数 k，处理对象从字符变成了整数，所以计数要用哈希表（值域到 1e9，开不了数组）。\n仍然只需要检查新进来的 nums[r]：窗口在每一步开始时都合法，只有新元素可能让计数超过 k。\n这题的 k 可以等于 1，此时就退化成「无重复元素的最长子数组」，可以拿来当第 3 题的整数版对照；k 大于等于数组中任意元素的出现次数时，答案就是 n。",
+  formula: "while (cnt[nums[r]] > k) { --cnt[nums[l]]; ++l; }\nans = max(ans, r − l + 1)",
+  demo: {
+    mode: "var",
+    rule: "varAtMostK",
+    arr: [1, 2, 3, 1, 2, 3, 1, 2],
+    k: 2,
+    legend: "蓝色 = 当前窗口（每个元素最多 2 次）；绿色 = 刷新了答案。第 7 步第三个 1 进来时收缩。"
+  },
+  code: "class Solution {\npublic:\n    int maxSubarrayLength(vector<int>& nums, int k) {\n        unordered_map<int, int> cnt;     // 值 -> 出现次数\n        int ans = 0, l = 0;\n\n        for (int r = 0; r < (int)nums.size(); ++r) {\n            ++cnt[nums[r]];              // 右端点入窗\n\n            while (cnt[nums[r]] > k) {   // 只有新元素可能超限\n                --cnt[nums[l]];\n                ++l;\n            }\n            ans = max(ans, r - l + 1);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "2958_solution.cpp",
+  complexity: { time: "O(n)", space: "O(n)（哈希表最多存窗口内的值）" },
+  pitfalls: [
+    "while 条件写 <code>&gt; k</code>，不是 <code>&gt;= k</code>：「最多 k 次」是允许等于 k 的。",
+    "值域到 1e9，只能用哈希表，不能开计数数组。",
+    "k = 1 时退化为「无重复最长子数组」，可对照第 3 题验证理解。",
+    "这是「每个元素最多 k 次」，不是「恰好 k 次」，也不是「最多 k 种元素」。"
+  ],
+  related: "同类型延伸：3090（k = 2 的字符串版）、3（k = 1）、904（上限换成「种类数 ≤ 2」）。",
+  demoIntro: "用 nums = [1,2,3,1,2,3,1,2]、k = 2 走一遍，盯着「单个元素最多出现次数」这个统计量。"
+},
+{
+  id: "p2024",
+  group: "var",
+  num: "2024",
+  title: "考试的最大困扰度",
+  en: "Maximize the Confusion of an Exam",
+  rating: "难度分 1643",
+  link: "https://leetcode.cn/problems/maximize-the-confusion-of-an-exam/",
+  tag: "不定长滑窗 · 两类计数",
+  oneLiner: "<b>answerKey</b> 记录每道题的答案（T / F），最多可以改 <b>k</b> 次答案，返回能得到的最长<b>连续相同答案</b>的长度。",
+  principle: "「把一段区间改成全 T」和「改成全 F」是两种方案，但没必要真的跑两遍——一个窗口就能同时处理：窗口里 T 有 cntT 个、F 有 cntF 个，要把整段变成同一种答案，需要改的个数就是<b>较少的那一类</b>，也就是 min(cntT, cntF)。\n于是合法条件就是 min(cntT, cntF) ≤ k，超了就把左端点移出去、并把它那一类的计数减一。\n换个写法更好记：窗口长度 − max(cntT, cntF) 也是「需要改的个数」，两者完全等价——因为两类加起来正好是窗口长度。看到别人代码里写 len − max 不要觉得是另一种思路。",
+  formula: "合法：min(cntT, cntF) ≤ k\n等价写法：len − max(cntT, cntF) ≤ k（两者相等）",
+  demo: {
+    mode: "var",
+    rule: "varReplaceK",
+    arr: ["T", "T", "F", "T", "T", "F", "T", "T"],
+    k: 1,
+    legend: "蓝色 = 当前窗口；绿色 = 刷新了答案。统计量里的「需修改」就是 min(cntT, cntF)。"
+  },
+  code: "class Solution {\npublic:\n    int maxConsecutiveAnswers(string answerKey, int k) {\n        int n = answerKey.size(), l = 0, cntT = 0, cntF = 0, ans = 0;\n\n        for (int r = 0; r < n; ++r) {\n            // 右端点入窗：按类型加计数\n            if (answerKey[r] == 'T') ++cntT; else ++cntF;\n\n            // 需修改的字符数 = 较少的那一类，超过 k 就收缩\n            while (min(cntT, cntF) > k) {\n                if (answerKey[l] == 'T') --cntT; else --cntF;\n                ++l;\n            }\n            ans = max(ans, r - l + 1);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "2024_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "不必分成「全 T」和「全 F」跑两遍：一个窗口同时维护两类计数就够了，跑两遍也对，只是代码翻倍。",
+    "要改的个数是<b>较少</b>的那一类 <code>min(cntT, cntF)</code>，不是较多的那一类。",
+    "出窗时按 <code>answerKey[l]</code> 的类型减对应计数，别一律减 cntT。",
+    "k 可以大于等于 n，此时答案就是 n。"
+  ],
+  related: "同类型延伸：1004（同类模型，只统计 0 的个数）、1493（最多允许 1 个 0）。",
+  demoIntro: "用 answerKey = TTFTTFTT、k = 1 走一遍，盯着「需修改」这个统计量。"
+},
+{
+  id: "p1004",
+  group: "var",
+  num: "1004",
+  title: "最大连续 1 的个数 III",
+  en: "Max Consecutive Ones III",
+  rating: "难度分 1656",
+  link: "https://leetcode.cn/problems/max-consecutive-ones-iii/",
+  tag: "不定长滑窗 · 计数",
+  oneLiner: "二进制数组 <b>nums</b>，最多可以把 <b>k</b> 个 0 翻转成 1，返回最长的<b>连续 1 的个数</b>。",
+  principle: "「最多翻转 k 个 0」等价于「窗口内 0 的个数 ≤ k」：窗口里所有 0 都翻成 1 之后，整段就变成了连续的 1，长度恰好是窗口长度。\n所以这是本组最朴素的一题：维护 zeros 计数，超过 k 就从左边移出（移出的是 0 时 zeros 减一），答案取窗口长度。\n它和 1493 是一对：1493 是「删掉一个 0」，本题是「翻转 k 个 0」；差别只在 1493 的答案要减 1（因为必须删），本题不用。把 1493 的 <code>r - l</code> 改成 <code>r - l + 1</code>、把 1 改成 k，就是本题。",
+  formula: "合法：窗口内 0 的个数 ≤ k\nans = max(ans, r − l + 1)",
+  demo: {
+    mode: "var",
+    rule: "varZerosK",
+    arr: [1, 1, 1, 0, 1, 1, 0, 1],
+    k: 1,
+    legend: "蓝色 = 当前窗口；绿色 = 刷新了答案。窗口里最多允许 1 个 0。"
+  },
+  code: "class Solution {\npublic:\n    int longestOnes(vector<int>& nums, int k) {\n        int ans = 0, l = 0, zeros = 0;\n\n        for (int r = 0; r < (int)nums.size(); ++r) {\n            zeros += (nums[r] == 0);   // 右端点是 0 就记一笔\n\n            while (zeros > k) {        // 0 太多，收缩左端点\n                zeros -= (nums[l] == 0);\n                ++l;\n            }\n            // 窗口里的 0 全部翻成 1，长度不变\n            ans = max(ans, r - l + 1);\n        }\n        return ans;\n    }\n};",
+  codeTitle: "1004_solution.cpp",
+  complexity: { time: "O(n)", space: "O(1)" },
+  pitfalls: [
+    "答案就是窗口长度（翻转不改变长度），别像 1493 那样减 1。",
+    "zeros 只在进出「0」时变化，写成 <code>zeros += (nums[r] == 0)</code> 最省事，也避免 if 分支写漏。",
+    "k 大于等于 0 的总个数时答案是 n。",
+    "和 1493 的差别要记牢：1493 必须删掉一个元素，所以是 <code>r - l</code>；本题是翻转，所以是 <code>r - l + 1</code>。"
+  ],
+  related: "同类型延伸：1493（删一个 0，答案减 1）、2024（把 T/F 改成同一类）、1208（限制换成「代价和」）。",
+  demoIntro: "用 nums = [1,1,1,0,1,1,0,1]、k = 1 走一遍，看第二个 0 进来时窗口怎么让出第一个 0。"
+}
+];
+
+/* ==================== 基础工具 ==================== */
+window.__err = window.__err || [];
+window.addEventListener('error', function (e) { window.__err.push(String(e && e.message)); });
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function plain(s) { return String(s == null ? '' : s).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' '); }
+function paras(text) {
+  return String(text).split('\n').filter(function (t) { return t.trim(); })
+    .map(function (t) { return '<p>' + t + '</p>'; }).join('');
+}
+
+/* ==================== C++ 极简高亮 ==================== */
+var CPP_KW = /^(?:class|struct|public|private|protected|int|long|double|float|bool|char|void|unsigned|signed|short|return|for|while|if|else|continue|break|const|static|auto|using|namespace|template|typename|default|switch|case|new|delete|sizeof|vector|string|unordered_map|map|set|queue|stack|pair|max|min|abs|swap|sort|size|empty|push_back|emplace_back|begin|end|resize|assign|erase|insert|first|second|true|false|nullptr|this|operator)$/;
+
+function hl(src) {
+  var out = '', i = 0, n = src.length, c, j, q, k, m, w;
+  while (i < n) {
+    c = src.charAt(i);
+    if (c === '/' && src.charAt(i + 1) === '/') {
+      j = src.indexOf('\n', i);
+      if (j < 0) j = n;
+      out += '<span class="cm">' + esc(src.slice(i, j)) + '</span>';
+      i = j; continue;
+    }
+    if (c === '"' || c === '\u0027') {
+      q = c; k = i + 1;
+      while (k < n && src.charAt(k) !== q) { if (src.charAt(k) === '\\') ++k; ++k; }
+      k = Math.min(k + 1, n);
+      out += '<span class="st">' + esc(src.slice(i, k)) + '</span>';
+      i = k; continue;
+    }
+    if (/[A-Za-z0-9_]/.test(c)) {
+      m = i;
+      while (m < n && /[A-Za-z0-9_]/.test(src.charAt(m))) ++m;
+      w = src.slice(i, m);
+      if (/^[0-9]/.test(w)) out += '<span class="nu">' + esc(w) + '</span>';
+      else if (CPP_KW.test(w)) out += '<span class="kw">' + esc(w) + '</span>';
+      else out += esc(w);
+      i = m; continue;
+    }
+    out += esc(c); i++;
+  }
+  return out;
+}
+
+/* ==================== 代码块 ==================== */
+var RAWS = [];
+function regCode(raw) { RAWS.push(raw); return RAWS.length - 1; }
+function codeBlock(raw, name) {
+  var idx = regCode(raw);
+  return '<details class="code" open><summary>' + esc(name) + '</summary>' +
+    '<div class="code-head"><span>' + esc(name) + '</span>' +
+    '<button class="btn sm" type="button" data-copy="' + idx + '">复制代码</button></div>' +
+    '<pre><code>' + hl(raw) + '</code></pre></details>';
+}
+
+/* ==================== 表格 ==================== */
+var NUM2ID = {};
+function tableHTML(t) {
+  var h = '<table class="tbl"><thead><tr>';
+  t.head.forEach(function (c) { h += '<th>' + c + '</th>'; });
+  h += '</tr></thead><tbody>';
+  t.rows.forEach(function (r) {
+    h += '<tr>';
+    r.forEach(function (c) {
+      var s = String(c);
+      if (/^\d{1,4}$/.test(s) && NUM2ID[s]) s = '<a href="#' + NUM2ID[s] + '">' + s + '</a>';
+      h += '<td>' + s + '</td>';
+    });
+    h += '</tr>';
+  });
+  return h + '</tbody></table>';
+}
+
+/* ==================== 分组信息 ==================== */
+var GROUP_META = {
+  fixed: { name: '定长滑动窗口', desc: '窗口长度恒为 k，左右端点同步右移：进一个、出一个' },
+  var: { name: '不定长滑动窗口', desc: '右端点每步 +1，左端点按需右移：先收缩到合法，再取长度' }
+};
+var GROUP_ORDER = ['fixed', 'var'];
+
+/* ==================== 渲染：套路讲解 ==================== */
+function introHTML(D) {
+  var h = '<h2>' + esc(D.title) + '</h2><p class="lead">' + D.lead + '</p>';
+  D.blocks.forEach(function (b) {
+    h += '<div class="blk"><h3>' + esc(b.h) + '</h3>' + paras(b.p);
+    if (b.formula) h += '<span class="formula">' + esc(b.formula) + '</span>';
+    h += '</div>';
+  });
+  h += '<div class="blk"><h3>模板代码</h3>' + codeBlock(D.codes[0].code, D.codes[0].title) + '</div>';
+  for (var i = 1; i < D.codes.length; i++) {
+    h += '<div class="blk">' + codeBlock(D.codes[i].code, D.codes[i].title) + '</div>';
+  }
+  var tables = D.tables || [D.tableA, D.tableB];
+  tables.forEach(function (t) {
+    if (t) h += '<div class="blk"><h3>' + esc(t.title) + '</h3>' + tableHTML(t) + '</div>';
+  });
+  h += '<div class="blk"><h3>统一踩坑清单</h3><ul>' +
+    D.pitfalls.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+  h += '<div class="tag-row">' +
+    D.links.map(function (l) { return '<a class="tag" href="' + l.href + '" target="_blank" rel="noopener">' + esc(l.label) + ' ↗</a>'; }).join('') +
+    '</div>';
+  return h;
+}
+
+function introHay(D) {
+  var parts = [D.title, plain(D.lead), '滑动窗口 套路 模板'];
+  D.blocks.forEach(function (b) { parts.push(plain(b.h), plain(b.p), plain(b.formula)); });
+  D.codes.forEach(function (c) { parts.push(c.code); });
+  var tables = D.tables || [D.tableA, D.tableB];
+  tables.forEach(function (t) {
+    if (!t) return;
+    parts.push(plain(t.title));
+    t.rows.forEach(function (r) { parts.push(plain(r.join(' '))); });
+  });
+  parts.push(D.pitfalls.map(plain).join(' '));
+  return parts.join(' ').toLowerCase();
+}
+
+/* ==================== 渲染：题目卡片 ==================== */
+function groupBarHTML(key, count) {
+  var m = GROUP_META[key];
+  return '<div class="groupbar"><h2>' + esc(m.name) + '</h2>' +
+    '<span class="gdesc">' + esc(m.desc) + '</span>' +
+    '<span class="gcount">' + count + ' 题</span></div>';
+}
+
+function probHTML(p, i) {
+  var h = '<article class="card prob" id="' + p.id + '" data-id="' + p.id + '" data-g="' + p.group + '">';
+  h += '<div class="p-head"><span class="num">#' + esc(p.num) + '</span><h2>' + esc(p.title) + '</h2>' +
+    '<span class="rating">' + esc(p.rating) + '</span><span class="rating">' + esc(p.tag) + '</span>' +
+    '<a class="link" href="' + p.link + '" target="_blank" rel="noopener">力扣原题 ↗</a></div>';
+  h += '<p class="oneline">' + p.oneLiner + '</p>';
+  h += '<div class="principle">' + paras(p.principle);
+  if (p.formula) h += '<span class="formula">' + esc(p.formula) + '</span>';
+  h += '</div>';
+  h += '<h3 class="sec">动画演示</h3>';
+  h += '<p class="note note-lead">' + p.demoIntro + '</p>';
+  h += '<div class="demo" data-demo="' + i + '">' +
+    '<div class="demo-bar">' +
+    '<button class="btn sm" type="button" data-act="prev">上一步</button>' +
+    '<button class="btn sm primary" type="button" data-act="play">自动播放</button>' +
+    '<button class="btn sm" type="button" data-act="next">下一步</button>' +
+    '<button class="btn sm" type="button" data-act="reset">重置</button>' +
+    '<span class="step-badge"></span></div>' +
+    '<div class="track"></div><div class="stats"></div><div class="answer"></div>' +
+    '<p class="note"></p><p class="legend">' + p.demo.legend +
+    (p.demo.mode === 'var' ? '　绿色方块 = 这一步刷新了答案。' : '　绿色方块 = 当前最优（或满足条件的）窗口。') +
+    '</p></div>';
+  h += '<h3 class="sec">C++ 代码（最优解）</h3>' + codeBlock(p.code, p.codeTitle);
+  h += '<div class="meta"><span class="chip">时间 ' + esc(p.complexity.time) + '</span>' +
+    '<span class="chip">空间 ' + esc(p.complexity.space) + '</span>' +
+    '<span class="chip">难度分 ' + esc(p.rating.replace(/[^\d]/g, '') || '—') + '</span></div>';
+  h += '<div class="pitfalls"><h3 class="sec">易错点 / 踩坑记录</h3><ul>' +
+    p.pitfalls.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+  if (p.related) h += '<p class="related">' + p.related + '</p>';
+  h += '<div class="note-box"><label for="note-' + p.id + '">我的笔记（边打字边自动保存到本机浏览器）</label>' +
+    '<textarea id="note-' + p.id + '" data-note="' + p.id + '" rows="3" placeholder="用自己的话复述一遍思路，或者记下这次踩的坑…"></textarea>' +
+    '<span class="save" data-save="' + p.id + '" role="status" aria-live="polite"></span></div>';
+  h += '<label class="mastered"><input type="checkbox" data-mastered="' + p.id + '"> <span class="mastered-text">已掌握这题</span></label>';
+  return h + '</article>';
+}
+
+function haystack(p) {
+  var arr = [p.num, '#' + p.num, p.title, p.en, p.tag, p.rating, plain(p.oneLiner),
+    plain(p.principle), plain(p.formula), p.code, p.pitfalls.map(plain).join(' '),
+    plain(p.related), plain(p.demoIntro), plain(p.demo.legend),
+    p.complexity.time, p.complexity.space,
+    p.group === 'var' ? '不定长 可变窗口' : '定长 固定窗口'];
+  return arr.join(' ').toLowerCase();
+}
+
+/* ==================== 窗口统计 ==================== */
+function statsOf(arr, l, r) {
+  var sum = 0, distinct = 0, vowel = 0, black = 0, zeros = 0, maxCount = 0, i, v, key;
+  var seen = {};
+  for (i = l; i <= r; i++) {
+    v = arr[i];
+    if (typeof v === 'number') { sum += v; if (v === 0) zeros++; }
+    else if (v === '0') zeros++;
+    key = String(v);
+    seen[key] = (seen[key] || 0) + 1;
+    if (seen[key] > maxCount) maxCount = seen[key];
+    if (seen[key] === 1) distinct++;
+    if ('aeiou'.indexOf(key.toLowerCase()) >= 0) vowel++;
+    if (key === 'B') black++;
+  }
+  return { sum: sum, distinct: distinct, vowel: vowel, black: black, zeros: zeros, maxCount: maxCount, len: r - l + 1 };
+}
+
+/* ==================== 动画：定长（等宽窗口） ==================== */
+function buildFixedSteps(d) {
+  var arr = d.arr, n = arr.length, steps = [], st, i, l, r, c, w, total = 0;
+  for (i = 0; i < n; i++) if (typeof arr[i] === 'number') total += arr[i];
+
+  if (d.rule === 'centeredAvg') {
+    var rad = d.radius, len = 2 * rad + 1;
+    for (c = rad; c + rad < n; c++) {
+      l = c - rad; r = c + rad; st = statsOf(arr, l, r);
+      var avg = st.sum / len;
+      steps.push({
+        l: l, r: r, center: c, st: st,
+        chips: [{ t: '窗口和', v: String(st.sum) }, { t: '元素个数', v: String(len) }, { t: '平均值', v: avg.toFixed(3) }],
+        ans: 'avgs[' + c + '] = ' + st.sum + ' / ' + len + ' ≈ ' + avg.toFixed(5),
+        note: '中心 c = ' + c + '，窗口 [' + l + ', ' + r + ']，共 ' + len + ' 个元素。'
+      });
+    }
+    return steps;
+  }
+
+  w = (d.rule === 'maxPoints') ? (n - d.k) : d.win;
+  var best = null, cnt = 0, mn = null, target = 0, hit = false, good = false, note;
+
+  for (i = 0; i + w <= n; i++) {
+    l = i; r = i + w - 1; st = statsOf(arr, l, r);
+    var chips = [], ans = '', ok = false;
+    note = (i === 0)
+      ? '第一个窗口 [' + l + ', ' + r + ']，先数出它里面的统计量。'
+      : '窗口整体右移一位：' + arr[r] + ' 进来，' + arr[r - w] + ' 出去。';
+
+    if (d.rule === 'maxVowel') {
+      best = (best === null) ? st.vowel : Math.max(best, st.vowel);
+      ok = st.vowel === best;
+      chips = [{ t: '窗口内元音', v: String(st.vowel) }];
+      ans = '最大元音数 = ' + best;
+    } else if (d.rule === 'maxAvg') {
+      best = (best === null) ? st.sum : Math.max(best, st.sum);
+      ok = st.sum === best;
+      chips = [{ t: '窗口和', v: String(st.sum) }];
+      ans = '最大和 = ' + best + '  →  最大平均数 = ' + (best / w).toFixed(5);
+    } else if (d.rule === 'countGE') {
+      target = w * d.threshold;
+      hit = st.sum >= target;
+      if (hit) cnt++;
+      ok = hit;
+      chips = [{ t: '窗口和', v: String(st.sum) }, { t: '达标（≥ ' + target + '）', v: hit ? '是' : '否', yes: hit }];
+      ans = '已计数 ' + cnt + ' 个达标窗口';
+    } else if (d.rule === 'minFlips') {
+      best = (best === null) ? st.black : Math.max(best, st.black);
+      ok = st.black === best;
+      chips = [{ t: '窗口内黑块 B', v: String(st.black) }, { t: '窗口内白块 W', v: String(w - st.black) }];
+      ans = '黑块最多 ' + best + '  →  最少涂色 = ' + w + ' − ' + best + ' = ' + (w - best);
+    } else if (d.rule === 'almostUnique') {
+      good = st.distinct >= d.m;
+      ok = good;
+      if (good) best = (best === null) ? st.sum : Math.max(best, st.sum);
+      chips = [{ t: '窗口和', v: String(st.sum) }, { t: '不同元素', v: st.distinct + ' 种' },
+        { t: '达标（≥ ' + d.m + ' 种）', v: good ? '是' : '否', yes: good }];
+      ans = '最大和 = ' + (best === null ? '0（暂无达标窗口）' : best);
+    } else if (d.rule === 'distinctK') {
+      good = st.distinct === w;
+      ok = good;
+      if (good) best = (best === null) ? st.sum : Math.max(best, st.sum);
+      chips = [{ t: '窗口和', v: String(st.sum) }, { t: '不同元素', v: st.distinct + ' 种' },
+        { t: '达标（恰好 ' + w + ' 种）', v: good ? '是' : '否', yes: good }];
+      ans = '最大和 = ' + (best === null ? '0（暂无达标窗口）' : best);
+    } else if (d.rule === 'maxPoints') {
+      mn = (mn === null) ? st.sum : Math.min(mn, st.sum);
+      ok = st.sum === mn;
+      chips = [{ t: '中间窗口和', v: String(st.sum) }, { t: '中间牌数 n−k', v: String(w) }];
+      ans = '中间最小和 = ' + mn + '  →  可取点数 = ' + total + ' − ' + mn + ' = ' + (total - mn);
+    }
+
+    steps.push({ l: l, r: r, st: st, chips: chips, ans: ans, note: note, ok: ok, edge: d.rule === 'maxPoints' });
+  }
+  return steps;
+}
+
+/* ==================== 动画：不定长（可变窗口） ==================== */
+function varWindow(d, arr, l, r) {
+  var st = statsOf(arr, l, r), len = r - l + 1, chips = [], ok = false, why = '', need = 0;
+  switch (d.rule) {
+    case 'varNoRepeat':
+      ok = (st.distinct === len);
+      chips = [{ t: '窗口长度', v: String(len) }, { t: '不同字符', v: st.distinct + ' 种' },
+        { t: '窗口内无重复', v: ok ? '是' : '否', yes: ok }];
+      why = '窗口内出现了重复字符';
+      break;
+    case 'varTwoOcc':
+      ok = (st.maxCount <= 2);
+      chips = [{ t: '窗口长度', v: String(len) }, { t: '单个字符最多出现', v: st.maxCount + ' 次' },
+        { t: '上限 2 次', v: ok ? '未超' : '超出', yes: ok }];
+      why = '某个字符出现了超过 2 次';
+      break;
+    case 'varOneZero':
+      ok = (st.zeros <= 1);
+      chips = [{ t: '窗口长度', v: String(len) }, { t: '窗口内 0 的个数', v: String(st.zeros) },
+        { t: '可删的 0 只有 1 个', v: ok ? '够用' : '超出', yes: ok }];
+      why = '窗口里有 2 个以上的 0';
+      break;
+    case 'varBalance':
+      var minv = arr[l], maxv = arr[r], lim = minv * d.k;
+      ok = (maxv <= lim);
+      chips = [{ t: '最小值 arr[l]', v: String(minv) }, { t: '最大值 arr[r]', v: String(maxv) },
+        { t: '上限 min×k', v: String(lim) + (ok ? '（够）' : '（不够）'), yes: ok }];
+      why = maxv + ' > ' + minv + ' × ' + d.k + ' = ' + lim + '，超出倍数限制';
+      break;
+    case 'varCost':
+      ok = (st.sum <= d.maxCost);
+      chips = [{ t: '窗口累计代价', v: String(st.sum) }, { t: '预算 maxCost', v: String(d.maxCost) + (ok ? '（有余）' : '（超了）'), yes: ok }];
+      why = '累计代价 ' + st.sum + ' 超过预算 ' + d.maxCost;
+      break;
+    case 'varTwoKinds':
+      ok = (st.distinct <= 2);
+      chips = [{ t: '水果种类数', v: st.distinct + ' 种' }, { t: '只有 2 个篮子', v: ok ? '够装' : '装不下', yes: ok }];
+      why = '窗口里出现了 3 种水果';
+      break;
+    case 'varDistinctSum':
+      ok = (st.distinct === len);
+      chips = [{ t: '窗口和', v: String(st.sum) }, { t: '不同元素', v: st.distinct + ' 种' },
+        { t: '无重复元素', v: ok ? '是' : '否', yes: ok }];
+      why = '窗口内出现了重复元素';
+      break;
+    case 'varAtMostK':
+      ok = (st.maxCount <= d.k);
+      chips = [{ t: '窗口长度', v: String(len) }, { t: '单个元素最多出现', v: st.maxCount + ' 次' },
+        { t: '上限 k', v: d.k + ' 次' + (ok ? '（未超）' : '（超出）'), yes: ok }];
+      why = '某个元素出现了超过 ' + d.k + ' 次';
+      break;
+    case 'varReplaceK':
+      need = len - st.maxCount;
+      ok = (need <= d.k);
+      chips = [{ t: '窗口长度', v: String(len) }, { t: '占多数的字符', v: st.maxCount + ' 个' },
+        { t: '需修改', v: need + ' 个' + (ok ? '（够改）' : '（超 k）'), yes: ok }];
+      why = '需要改 ' + need + ' 个字符，超过 k = ' + d.k;
+      break;
+    case 'varZerosK':
+      ok = (st.zeros <= d.k);
+      chips = [{ t: '窗口长度', v: String(len) }, { t: '窗口内 0 的个数', v: String(st.zeros) },
+        { t: '可翻转 0 的个数', v: d.k + ' 个' + (ok ? '（够）' : '（不够）'), yes: ok }];
+      why = '窗口里 0 的个数超过 k = ' + d.k;
+      break;
+  }
+  return { ok: ok, st: st, chips: chips, why: why, len: len };
+}
+
+function buildVarSteps(d) {
+  var arr = d.arr, n = arr.length, steps = [], l = 0, r, ans = 0, w, oldL, bad, note, prev;
+  for (r = 0; r < n; r++) {
+    oldL = l;
+    w = varWindow(d, arr, l, r);
+    bad = '';
+    while (!w.ok && l < r) {
+      bad = w.why;
+      l++;
+      w = varWindow(d, arr, l, r);
+    }
+    var len = r - l + 1, prev2 = ans;
+    if (d.rule === 'varOneZero') ans = Math.max(ans, len - 1);
+    else if (d.rule === 'varDistinctSum') ans = Math.max(ans, w.st.sum);
+    else ans = Math.max(ans, len);
+
+    var ansText;
+    if (d.rule === 'varBalance') ansText = '最长平衡段 = ' + ans + '  →  最少移除 = ' + n + ' − ' + ans + ' = ' + (n - ans);
+    else if (d.rule === 'varOneZero') ansText = '最多连续 1 = ' + ans + '（窗口长度 ' + len + ' − 1）';
+    else if (d.rule === 'varDistinctSum') ansText = '最大得分 = ' + ans;
+    else if (d.rule === 'varCost') ansText = '最长可转换长度 = ' + ans;
+    else ansText = '最长长度 = ' + ans;
+
+    if (l > oldL) {
+      note = '第 ' + r + ' 位进来后窗口不合法（' + bad + '），左端点从 ' + oldL + ' 收缩到 ' + l + '，现在窗口 [' + l + ', ' + r + ']。';
+    } else {
+      note = '右端点走到 ' + r + '，窗口 [' + l + ', ' + r + '] 合法，长度 ' + len + '。';
+    }
+
+    steps.push({ l: l, r: r, st: w.st, chips: w.chips, ans: ansText, note: note, ok: (ans > prev2 || r === 0) });
+  }
+  return steps;
+}
+
+function buildSteps(d) {
+  return (d.mode === 'var') ? buildVarSteps(d) : buildFixedSteps(d);
+}
+
+/* ==================== 动画播放 ==================== */
+var DEMOS = {};
+function initDemo(i) {
+  var box = document.querySelector('.demo[data-demo="' + i + '"]');
+  var steps = buildSteps(PROBLEMS[i].demo);
+  DEMOS[i] = { el: box, steps: steps, cur: 0, timer: null, arr: PROBLEMS[i].demo.arr };
+  var track = box.querySelector('.track'), h = '';
+  for (var c = 0; c < PROBLEMS[i].demo.arr.length; c++) {
+    h += '<div class="cell"><div class="idx">' + c + '</div><div class="box">' +
+      esc(PROBLEMS[i].demo.arr[c]) + '</div></div>';
+  }
+  track.innerHTML = h;
+  renderStep(i);
+}
+
+function renderStep(i) {
+  var d = DEMOS[i], s = d.steps[d.cur];
+  if (!s) return;
+  var box = d.el;
+  var cells = box.querySelectorAll('.cell');
+  for (var c = 0; c < cells.length; c++) {
+    var inWin = (c >= s.l && c <= s.r);
+    cells[c].classList.toggle('in', inWin);
+    cells[c].classList.toggle('ok', inWin && !!s.ok);
+    cells[c].classList.toggle('center', s.center === c);
+    cells[c].classList.toggle('edge', !!s.edge && !inWin);
+  }
+  box.querySelector('.stats').innerHTML = s.chips.map(function (ch) {
+    var cls = (ch.yes === true) ? ' yes' : (ch.yes === false ? ' no' : '');
+    return '<span class="stat' + cls + '">' + esc(ch.t) + ' = ' + esc(String(ch.v)) + '</span>';
+  }).join('');
+  box.querySelector('.answer').textContent = s.ans;
+  box.querySelector('.note').textContent = s.note;
+  box.querySelector('.step-badge').textContent = '第 ' + (d.cur + 1) + ' / ' + d.steps.length + ' 步';
+  box.querySelector('[data-act="prev"]').disabled = (d.cur === 0);
+  box.querySelector('[data-act="next"]').disabled = (d.cur === d.steps.length - 1);
+  var pb = box.querySelector('[data-act="play"]');
+  pb.textContent = d.timer ? '暂停' : (d.cur === d.steps.length - 1 ? '重播' : '自动播放');
+}
+
+function stopPlay(i) {
+  var d = DEMOS[i];
+  if (d.timer) { clearInterval(d.timer); d.timer = null; }
+  renderStep(i);
+}
+
+function togglePlay(i) {
+  var d = DEMOS[i];
+  if (d.timer) { stopPlay(i); return; }
+  if (d.cur >= d.steps.length - 1) { d.cur = 0; renderStep(i); }
+  d.timer = setInterval(function () {
+    if (d.cur >= d.steps.length - 1) { stopPlay(i); return; }
+    d.cur++; renderStep(i);
+  }, 780);
+  renderStep(i);
+}
+
+/* ==================== 主题 / 进度 / 笔记 ==================== */
+var THEME_KEY = 'lcsw-theme', MASTER_KEY = 'lcsw-mastered', NOTE_KEY = 'lcsw-note::';
+var mastered = {};
+
+function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  var b = document.getElementById('theme');
+  b.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+  b.textContent = (t === 'dark') ? '浅色模式' : '深色模式';
+  store(THEME_KEY, t);
+}
+
+function updateProgress() {
+  var done = 0;
+  PROBLEMS.forEach(function (p) { if (mastered[p.id]) done++; });
+  document.getElementById('bar').style.width = (done / PROBLEMS.length * 100) + '%';
+  document.getElementById('pct').textContent = '已掌握 ' + done + ' / ' + PROBLEMS.length;
+}
+
+function copyText(text, btn) {
+  var done = function () { var old = btn.textContent; btn.textContent = '已复制 ✓'; setTimeout(function () { btn.textContent = old; }, 1200); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+  } else { fallbackCopy(text, done); }
+}
+function fallbackCopy(text, done) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly', 'readonly');
+  ta.style.position = 'fixed'; ta.style.left = '-9999px';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+function exportMD() {
+  var md = '# 滑动窗口 18 题复习笔记\n\n';
+  md += '导出时间：' + new Date().toLocaleString() + '\n\n';
+  md += '> 来源题单：滑动窗口 · https://leetcode.cn/discuss/post/3578981/\n\n';
+  md += '> 定长 8 题 + 不定长 10 题，共 ' + PROBLEMS.length + ' 题\n\n---\n\n';
+
+  var GROUPS = [
+    { key: 'fixed', intro: INTRO, no: '0' },
+    { key: 'var', intro: INTRO2, no: '1' }
+  ];
+  GROUPS.forEach(function (g) {
+    var list = PROBLEMS.filter(function (p) { return p.group === g.key; });
+    md += '## ' + g.no + '. ' + g.intro.title + '\n\n';
+    g.intro.blocks.forEach(function (b) {
+      md += '### ' + b.h + '\n\n' + plain(b.p.split('\n').join(' ')) + '\n\n';
+      if (b.formula) md += '```\n' + b.formula + '\n```\n\n';
+    });
+    md += '### 通用易错点\n\n' + g.intro.pitfalls.map(function (x) { return '- ' + plain(x); }).join('\n') + '\n\n---\n\n';
+
+    list.forEach(function (p) {
+      md += '## ' + p.num + '. ' + p.title + '\n\n';
+      md += '- 难度分：' + p.rating.replace('难度分 ', '') + '\n- 原题：' + p.link + '\n- 状态：' + (mastered[p.id] ? '已掌握' : '待复习') + '\n\n';
+      md += '**题意**：' + plain(p.oneLiner) + '\n\n';
+      md += '**原理**：\n\n' + p.principle.split('\n').map(function (t) { return '> ' + t; }).join('\n\n') + '\n\n';
+      if (p.formula) md += '**关键式子**：`' + p.formula.replace(/\n/g, ' ; ') + '`\n\n';
+      md += '**C++ 代码**：\n\n```cpp\n' + p.code + '\n```\n\n';
+      md += '**复杂度**：时间 ' + p.complexity.time + '，空间 ' + p.complexity.space + '\n\n';
+      md += '**易错点**：\n' + p.pitfalls.map(function (x) { return '- ' + plain(x); }).join('\n') + '\n\n';
+      var note = load(NOTE_KEY + p.id);
+      md += '**我的笔记**：\n\n' + (note ? note : '_（还没写）_') + '\n\n---\n\n';
+    });
+  });
+
+  var blob = new Blob(['\ufeff' + md], { type: 'text/markdown;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '滑动窗口-18题复习笔记.md';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+}
+
+/* ==================== 搜索 ==================== */
+function initSearch() {
+  var q = document.getElementById('q'), empty = document.getElementById('empty'), hits = document.getElementById('hits');
+  q.addEventListener('input', function () {
+    var kws = q.value.toLowerCase().split(/\s+/).filter(Boolean), hit = 0, introShown = 0, i, j, k;
+    PROBLEMS.forEach(function (p) {
+      var card = document.getElementById(p.id);
+      var ok = kws.every(function (kw) { return card.getAttribute('data-search').indexOf(kw) >= 0; });
+      card.hidden = !ok;
+      if (ok) hit++;
+      var link = document.querySelector('#toc a[href="#' + p.id + '"]');
+      if (link) link.hidden = !ok;
+    });
+    var intros = document.querySelectorAll('[data-intro]');
+    for (i = 0; i < intros.length; i++) {
+      var sec = intros[i];
+      var iok = kws.every(function (kw) { return sec.getAttribute('data-search').indexOf(kw) >= 0; });
+      sec.hidden = (kws.length > 0 && !iok);
+      if (!sec.hidden) introShown++;
+      var il = document.querySelector('#toc a[href="#' + sec.id + '"]');
+      if (il) il.hidden = sec.hidden;
+    }
+    var gs = document.querySelectorAll('#toc .navgroup');
+    for (j = 0; j < gs.length; j++) {
+      var key = gs[j].getAttribute('data-g');
+      var links = document.querySelectorAll('#toc a[data-g="' + key + '"]');
+      var any = false;
+      for (k = 0; k < links.length; k++) if (!links[k].hidden) any = true;
+      gs[j].hidden = !any;
+    }
+    hits.textContent = kws.length ? ('搜索命中 题目 ' + hit + ' / ' + PROBLEMS.length) : '';
+    empty.hidden = !(kws.length > 0 && hit === 0 && introShown === 0);
+  });
+}
+
+/* ==================== 滚动高亮 ==================== */
+function initScrollSpy() {
+  var ticking = false, activeId = '';
+  function update() {
+    ticking = false;
+    var y = window.scrollY + 150, cards = document.querySelectorAll('main .card'), cur = '';
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].hidden) continue;
+      if (cards[i].offsetTop <= y) cur = cards[i].id;
+    }
+    if (!cur) { for (var j = 0; j < cards.length; j++) { if (!cards[j].hidden) { cur = cards[j].id; break; } } }
+    if (cur === activeId) return;
+    activeId = cur;
+    document.querySelectorAll('#toc a').forEach(function (a) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    });
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+  });
+  update();
+}
+
+/* ==================== 初始化 ==================== */
+(function init() {
+  PROBLEMS.forEach(function (p) {
+    if (!p.group) p.group = 'fixed';
+    NUM2ID[p.num] = p.id;
+  });
+
+  var intro = document.getElementById('intro');
+  intro.setAttribute('data-intro', '1');
+  intro.innerHTML = introHTML(INTRO);
+  intro.setAttribute('data-search', introHay(INTRO) + ' 定长 固定窗口');
+
+  var box = document.getElementById('problems'), h = '';
+  GROUP_ORDER.forEach(function (g) {
+    var list = PROBLEMS.filter(function (p) { return p.group === g; });
+    if (!list.length) return;
+    h += groupBarHTML(g, list.length);
+    if (g === 'var') h += '<section id="intro2" class="card intro" data-id="intro2" data-intro="1"></section>';
+    list.forEach(function (p) { h += probHTML(p, PROBLEMS.indexOf(p)); });
+  });
+  box.innerHTML = h;
+
+  var i2 = document.getElementById('intro2');
+  if (i2) {
+    i2.innerHTML = introHTML(INTRO2);
+    i2.setAttribute('data-search', introHay(INTRO2) + ' 不定长 可变窗口');
+  }
+
+  var toc = '<div class="navtitle">目录 · 点题号跳转</div>';
+  GROUP_ORDER.forEach(function (g) {
+    var list = PROBLEMS.filter(function (p) { return p.group === g; });
+    if (!list.length) return;
+    toc += '<div class="navgroup" data-g="' + g + '">' + esc(GROUP_META[g].name) + ' · ' + list.length + ' 题</div>';
+    toc += '<a href="#' + (g === 'fixed' ? 'intro' : 'intro2') + '" data-g="' + g + '"><span class="n">序</span>' +
+      (g === 'fixed' ? '定长套路' : '不定长套路') + '</a>';
+    list.forEach(function (p) {
+      toc += '<a href="#' + p.id + '" data-g="' + g + '"><span class="n">' + esc(p.num) + '</span>' + esc(p.title) + '</a>';
+    });
+  });
+  document.getElementById('toc').innerHTML = toc;
+
+  PROBLEMS.forEach(function (p, i) {
+    document.getElementById(p.id).setAttribute('data-search', haystack(p));
+    initDemo(i);
+  });
+
+  // 恢复笔记
+  PROBLEMS.forEach(function (p) {
+    var ta = document.getElementById('note-' + p.id), v = load(NOTE_KEY + p.id);
+    if (ta && v) { ta.value = v; document.querySelector('[data-save="' + p.id + '"]').textContent = '已载入上次保存的笔记'; }
+  });
+
+  // 恢复进度
+  try { mastered = JSON.parse(load(MASTER_KEY) || '{}') || {}; } catch (e) { mastered = {}; }
+  PROBLEMS.forEach(function (p) {
+    var cb = document.querySelector('input[data-mastered="' + p.id + '"]');
+    if (cb && mastered[p.id]) { cb.checked = true; cb.closest('label').classList.add('done'); }
+  });
+  updateProgress();
+
+  // 主题
+  applyTheme(load(THEME_KEY) === 'dark' ? 'dark' : 'light');
+  document.getElementById('theme').addEventListener('click', function () {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  document.getElementById('export').addEventListener('click', exportMD);
+
+  initSearch();
+  initScrollSpy();
+})();
+
+/* ==================== 事件委托 ==================== */
+document.getElementById('problems').addEventListener('click', function (e) {
+  var btn = e.target.closest ? e.target.closest('button') : null;
+  if (!btn) return;
+  var act = btn.getAttribute('data-act');
+  if (act) {
+    var dbox = btn.closest('.demo');
+    var i = parseInt(dbox.getAttribute('data-demo'), 10);
+    var d = DEMOS[i];
+    if (act === 'prev') { stopPlay(i); if (d.cur > 0) { d.cur--; renderStep(i); } }
+    else if (act === 'next') { stopPlay(i); if (d.cur < d.steps.length - 1) { d.cur++; renderStep(i); } }
+    else if (act === 'reset') { stopPlay(i); d.cur = 0; renderStep(i); }
+    else if (act === 'play') { togglePlay(i); }
+    return;
+  }
+  var cp = btn.getAttribute('data-copy');
+  if (cp !== null) copyText(RAWS[parseInt(cp, 10)], btn);
+});
+
+document.getElementById('problems').addEventListener('input', function (e) {
+  var t = e.target;
+  if (!t || !t.getAttribute || !t.getAttribute('data-note')) return;
+  var id = t.getAttribute('data-note');
+  var status = document.querySelector('[data-save="' + id + '"]');
+  if (status) status.textContent = '输入中…';
+  clearTimeout(t.__timer);
+  t.__timer = setTimeout(function () {
+    store(NOTE_KEY + id, t.value);
+    if (status) status.textContent = '已保存 ' + new Date().toTimeString().slice(0, 5);
+  }, 450);
+});
+
+document.getElementById('problems').addEventListener('change', function (e) {
+  var t = e.target;
+  if (!t || !t.getAttribute || !t.getAttribute('data-mastered')) return;
+  var id = t.getAttribute('data-mastered');
+  mastered[id] = t.checked;
+  store(MASTER_KEY, JSON.stringify(mastered));
+  var lab = t.closest('label');
+  if (lab) lab.classList.toggle('done', t.checked);
+  updateProgress();
+});
+</script>
+</body>
+</html>
