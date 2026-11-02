@@ -1,0 +1,150 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>CycleNet 论文内容详解</title><style>
+:root{
+  --ink:#1a1a1a; --ink2:#4a4a4a; --line:#d8d8d8; --bg:#ffffff;
+  --accent:#1f4e79; --accent2:#2f6db3; --soft:#f5f7fa; --warn:#b45309;
+}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;
+  font-size:10.6pt;line-height:1.75;}
+.page{max-width:900px;margin:0 auto;padding:44px 52px 64px;}
+h1{font-size:22pt;line-height:1.35;margin:0 0 6px;font-weight:700;letter-spacing:-.2px}
+h2{font-size:14.5pt;margin:34px 0 12px;padding-left:11px;border-left:4px solid var(--accent);font-weight:700}
+h3{font-size:11.8pt;margin:22px 0 8px;color:var(--accent);font-weight:700}
+h4{font-size:10.8pt;margin:16px 0 6px;font-weight:700}
+p{margin:0 0 10px}
+ul,ol{margin:0 0 12px;padding-left:22px}
+li{margin:3px 0}
+code{font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:9pt;
+  background:var(--soft);padding:1px 4px;border-radius:3px;border:1px solid #e8e8e8}
+pre{background:#f8f9fb;border:1px solid var(--line);border-left:3px solid var(--accent2);
+  border-radius:4px;padding:10px 13px;overflow-x:auto;margin:10px 0 14px}
+pre code{background:none;border:none;padding:0;font-size:8.9pt;line-height:1.6;display:block;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;margin:12px 0 16px;font-size:9.2pt}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:700}
+tr:nth-child(even) td{background:#fcfcfd}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.sub{color:var(--ink2);font-size:9.6pt}
+.meta{color:var(--ink2);font-size:9.4pt;margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.callout{background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--accent2);
+  border-radius:4px;padding:11px 15px;margin:14px 0}
+.callout.warn{border-left-color:var(--warn);background:#fdf9f3}
+.callout b{color:var(--accent)}
+figure{margin:16px 0 20px;text-align:center;page-break-inside:avoid}
+figure img{max-width:100%;border:1px solid var(--line);border-radius:3px}
+figcaption{font-size:9pt;color:var(--ink2);margin-top:7px;text-align:left;line-height:1.6}
+.tag{display:inline-block;font-size:8.4pt;padding:1px 7px;border-radius:10px;
+  background:#eaf1f8;color:var(--accent);border:1px solid #cfe0f0;margin-right:5px}
+.kpi{display:flex;gap:12px;margin:14px 0 18px;flex-wrap:wrap}
+.kpi div{flex:1 1 150px;border:1px solid var(--line);border-radius:5px;padding:10px 13px;background:#fbfcfd}
+.kpi b{display:block;font-size:16pt;color:var(--accent);line-height:1.3}
+.kpi span{font-size:8.8pt;color:var(--ink2)}
+.formula{text-align:center;font-family:"Cambria Math",Georgia,serif;font-size:10.5pt;margin:12px 0}
+.toc{font-size:9.6pt;column-count:2;column-gap:26px;margin:10px 0 6px}
+.toc a{color:var(--ink);text-decoration:none}
+.pb{page-break-before:always}
+hr{border:none;border-top:1px solid var(--line);margin:26px 0}
+.small{font-size:8.8pt;color:var(--ink2)}
+
+blockquote{margin:12px 0;padding:10px 16px;border-left:4px solid #2f6db3;
+  background:#f5f7fa;color:#333;border-radius:4px}
+blockquote p{margin:0 0 6px}
+table code,td code{font-size:8.4pt}
+h2{scroll-margin-top:20px}
+</style></head><body><div class="page"><h1>CycleNet 论文内容详解</h1><div class="meta">论文想解决什么问题、为什么这样设计、方法怎么算、证据有多强 · 所有数值取自 NeurIPS 2024 论文原文（Table 2/3/4/5/6）<br>配套：<b>01 · 复现流程文档</b> · <b>02 · 论文原理文档</b> · <b>03 · 图表说明与数据来源</b></div><p class="small">04 · 怎么运行、怎么训练、原理与实验清单</p>
+<blockquote><p>这份文档回答四个问题：<strong>模型是什么原理</strong>、<strong>怎么训练</strong>、<strong>怎么批量跑</strong>、<br><strong>notebook 和脚本各管什么</strong>。所有命令都在 <code>/home/jovyan/work/CycleNet_Repro/</code> 下执行。</p></blockquote>
+<hr>
+<h2>一、当前状态（2026-10-27 18:40）</h2>
+<table><thead><tr><th>阶段</th><th class="num">配置数</th><th>状态</th></tr></thead><tbody><tr><td>main（ETT 四子集）</td><td class="num">48</td><td>✅ 完成</td></tr><tr><td>new4（Weather/Electricity/Traffic/Solar）</td><td class="num">48</td><td>✅ 完成</td></tr><tr><td>ablation（ETTh1 消融）</td><td class="num">18</td><td>✅ 完成</td></tr><tr><td>baseline（5 个基线，ETTh1）</td><td class="num">20</td><td>✅ 完成</td></tr><tr><td>mlp（ETTh1 探路）</td><td class="num">4</td><td>✅ 完成</td></tr><tr><td><strong>seeds（补 2027/2028 种子）</strong></td><td class="num">64</td><td>🔄 55 完成，剩 9（Traffic/Solar 慢配置）</td></tr><tr><td><strong>abl_big（大通道消融）</strong></td><td class="num">36</td><td>⏳ 排队</td></tr><tr><td><strong>mlp8（MLP × 8 数据集）</strong></td><td class="num">96</td><td>⏳ 排队</td></tr></tbody></table>
+<p>已完成 138 个配置，目标 334 个。三个补充阶段自动串行，跑完会写 <code>logs/o_status.txt</code>。</p>
+<hr>
+<h2>二、模型原理（30 行代码的核心）</h2>
+<h3>2.1 一句话</h3>
+<p>时间序列里「周期」是确定性的（今天 8 点的用电量 ≈ 昨天 8 点），「趋势和噪声」才是随机的。 CycleNet 用一张<strong>可学习的周期表 Q</strong> 把前者显式建模，让线性主干只去拟合<strong>残差</strong>。</p>
+<h3>2.2 前向计算（<code>models/CycleNet.py</code> 的 <code>forward</code>）</h3>
+<pre><code>输入 x ∈ ℝ^(B×96×D)，周期索引 t
+
+① Instance Norm   x = (x - mean_t) / sqrt(var_t + 1e-5)
+② 减去周期         x = x - Q[t mod W]                    ← RCF 第一步
+③ 线性预测         y = Linear(x)                          ← 通道独立，权重共享
+④ 加回周期         y = y + Q[(t+96) mod W]                ← RCF 第二步
+⑤ 反归一化         y = y * sqrt(var_t) + mean_t</code></pre>
+<p><code>Q ∈ ℝ^(W×D)</code> 是<strong>逐通道、跨时间全局共享</strong>的一张表：</p>
+<ul><li>W 是周期长度（ETTh1 用 24 = 一天 24 小时；Electricity 用 168 = 一周 168 小时）</li><li>D 是通道数（ETTh1 是 7，Traffic 是 862）</li><li>第 d 个通道、第 k 个相位的值，就是「该通道在一天/一周中第 k 个时刻的平均水平」</li></ul>
+<p><strong>为什么有效</strong>：主干不必再花容量去重复学同一条曲线，只学「偏离周期的部分」 （天气突变、节假日、随机波动）。于是参数量可以极小。</p>
+<h3>2.3 参数量（这是论文最反直觉的地方）</h3>
+<table><thead><tr><th>模型</th><th>ETTh1（D=7, H=96）参数量</th></tr></thead><tbody><tr><td>CycleNet/Linear</td><td><strong>9 480</strong>（周期表 168 + 线性层 9 312）</td></tr><tr><td>CycleNet/MLP</td><td>99 080（周期表 168 + 两层 MLP）</td></tr><tr><td>DLinear</td><td>18 624</td></tr><tr><td>PatchTST</td><td>千万量级</td></tr></tbody></table>
+<p>9 480 个参数就能把 ETTh1 的 MSE 做到 0.377，而千万参数的 Transformer 在同一任务上做不到—— <strong>在强周期数据上，正确的归纳偏置比模型容量更值钱</strong>。</p>
+<h3>2.4 与「通道独立」的关系</h3>
+<p><code>Linear</code> 作用在 <code>x.permute(0,2,1)</code> 上，即对每个通道单独做 <code>96 → H</code> 的线性映射，<strong>权重共享</strong>。 好处：参数量与通道数只成线性关系（Traffic 862 通道也不爆）；坏处：丢掉了通道间的空间耦合 ——这正是论文承认的短板，也是它在 Traffic 上不如 iTransformer 的原因。</p>
+<hr>
+<h2>三、怎么训练一个模型（单配置）</h2>
+<pre><code>cd /home/jovyan/work/CycleNet_Repro/CycleNet
+
+python -u run.py \
+  --is_training 1 \
+  --root_path ../dataset/ \
+  --data_path ETTh1.csv \
+  --model_id ETTh1_96_96 \
+  --model CycleNet \
+  --data ETTh1 \
+  --features M \
+  --seq_len 96 --pred_len 96 \
+  --enc_in 7 --cycle 24 \
+  --model_type linear \
+  --train_epochs 30 --patience 5 --itr 1 \
+  --batch_size 256 --learning_rate 0.01 \
+  --random_seed 2024 \
+  --num_workers 0</code></pre>
+<p>跑完输出最后一行是 <code>mse:0.3774, mae:0.3907</code>，权重存在 <code>checkpoints/ETTh1_96_96_CycleNet_ETTh1_ftM_sl96_pl96_cycle24_linear_seed2024/checkpoint.pth</code>。</p>
+<h3>参数说明（改哪个会影响什么）</h3>
+<table><thead><tr><th>参数</th><th>含义</th><th>8 个数据集的官方取值</th></tr></thead><tbody><tr><td><code>--data</code></td><td>用哪个数据读取器</td><td>ETT 四子集用 <code>ETTh1/ETTh2/ETTm1/ETTm2</code>；Weather/Electricity/Traffic 用 <code>custom</code>；Solar 用 <code>Solar</code></td></tr><tr><td><code>--data_path</code></td><td>文件名（放在 <code>../dataset/</code> 下）</td><td>见下表</td></tr><tr><td><code>--enc_in</code></td><td>通道数</td><td>7 / 7 / 7 / 7 / 21 / 321 / 862 / 137</td></tr><tr><td><code>--cycle</code></td><td><strong>周期长度 W（最关键）</strong></td><td>24 / 24 / 96 / 96 / 144 / 168 / 168 / 144</td></tr><tr><td><code>--batch_size</code></td><td>批大小</td><td>256 / 256 / 256 / 256 / 256 / 64 / 64 / 64</td></tr><tr><td><code>--seq_len</code></td><td>回看窗口 L</td><td>主表统一 96</td></tr><tr><td><code>--pred_len</code></td><td>预测长度 H</td><td>96 / 192 / 336 / 720</td></tr><tr><td><code>--model_type</code></td><td>主干</td><td><code>linear</code> 或 <code>mlp</code></td></tr></tbody></table>
+<h3>8 个数据集的完整对照</h3>
+<table><thead><tr><th>数据集</th><th>文件</th><th><code>--data</code></th><th class="num">enc_in</th><th class="num">cycle</th><th class="num">batch</th></tr></thead><tbody><tr><td>ETTh1</td><td>ETTh1.csv</td><td>ETTh1</td><td class="num">7</td><td class="num">24</td><td class="num">256</td></tr><tr><td>ETTh2</td><td>ETTh2.csv</td><td>ETTh2</td><td class="num">7</td><td class="num">24</td><td class="num">256</td></tr><tr><td>ETTm1</td><td>ETTm1.csv</td><td>ETTm1</td><td class="num">7</td><td class="num">96</td><td class="num">256</td></tr><tr><td>ETTm2</td><td>ETTm2.csv</td><td>ETTm2</td><td class="num">7</td><td class="num">96</td><td class="num">256</td></tr><tr><td>Weather</td><td>weather.csv</td><td>custom</td><td class="num">21</td><td class="num">144</td><td class="num">256</td></tr><tr><td>Electricity</td><td>electricity.csv</td><td>custom</td><td class="num">321</td><td class="num">168</td><td class="num">64</td></tr><tr><td>Traffic</td><td>traffic.csv</td><td>custom</td><td class="num">862</td><td class="num">168</td><td class="num">64</td></tr><tr><td>Solar</td><td>solar_AL.txt</td><td>Solar</td><td class="num">137</td><td class="num">144</td><td class="num">64</td></tr></tbody></table>
+<p>这些取值不是猜的，来自官方 <code>scripts/CycleNet/Linear-Input-96/*.sh</code>。</p>
+<hr>
+<h2>四、怎么批量跑（真正的复现靠这个）</h2>
+<p><strong>单配置跑 334 次，不可能靠笔记本一个个点。</strong> 所以有一个调度器：</p>
+<pre><code>cd /home/jovyan/work/CycleNet_Repro
+
+python scripts/run_experiments.py --phase main     --workers 6   # ETT 四子集
+python scripts/run_experiments.py --phase new4     --workers 5   # 四个大通道数据集
+python scripts/run_experiments.py --phase ablation --workers 6   # RCF / 周期长度
+python scripts/run_experiments.py --phase baseline --workers 5   # 同协议基线
+python scripts/run_experiments.py --phase mlp8     --workers 5   # MLP × 8 数据集
+python scripts/run_experiments.py --phase seeds    --workers 5   # 补 2027/2028
+python scripts/run_experiments.py --phase abl_big  --workers 5   # 大通道消融</code></pre>
+<p>调度器做四件事：</p>
+<ol><li><strong>展开配置矩阵</strong>（数据集 × 预测长度 × 种子 × 变体）</li><li><strong>多线程并发</strong>调 <code>run.py</code>（每个子进程独立训练）</li><li><strong>断点续跑</strong>：按 <code>setting</code> 字段判重，已完成的自动跳过，中断后重跑不会重复计算</li><li><strong>落盘</strong>：每条记录一行 JSON 写进 <code>results/runs.jsonl</code>，完整 stdout 写进 <code>logs/</code></li></ol>
+<h3>可以只跑子集</h3>
+<pre><code># 只跑 Weather，只跑 1 个种子
+python scripts/run_experiments.py --phase new4 --datasets Weather --seeds 2024 --workers 1</code></pre>
+<h3>环境变量（不是可选项）</h3>
+<pre><code>export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1</code></pre>
+<p>容器默认开 4–8 线程时，CycleNet/Linear 的 <code>(B·C,96)@(96,96)</code> 小矩阵乘会被线程同步开销拖垮： <strong>Electricity 单 epoch 从 63 s 降到 6.8 s，数值完全一致</strong>。这个已经写进调度器的 ENV。</p>
+<hr>
+<h2>五、notebook 和脚本到底各管什么（重要）</h2>
+<p><strong>一份 notebook 并不跑 8 个数据集。</strong> 两者分工不同：</p>
+<table><thead><tr><th></th><th><code>notebooks/01_CycleNet复现主流程.ipynb</code></th><th><code>scripts/run_experiments.py</code></th></tr></thead><tbody><tr><td>定位</td><td><strong>演示 + 记录</strong>（带解释的流程）</td><td><strong>批量生产</strong>（跑 334 个配置）</td></tr><tr><td>跑多少</td><td>只跑 1 个配置（ETTh1, H=96）做示范</td><td>全部</td></tr><tr><td>数据</td><td>打印 8 个数据集的形状与 SHA256 做校验</td><td>自动选每个数据集的官方超参</td></tr><tr><td>结果</td><td>读 <code>runs.jsonl</code> 汇总、出图、显示在单元里</td><td>逐条追加写 <code>runs.jsonl</code></td></tr><tr><td>耗时</td><td>约 3 分钟（含 1 次 30 epoch 训练）</td><td>十几个小时（并发）</td></tr><tr><td>为什么</td><td>别人打开就能看懂「怎么跑」</td><td>长任务不能占着 kernel 串行跑</td></tr></tbody></table>
+<p>所以正确用法是：<strong>先用 notebook 走一遍理解流程，再用调度器批量跑数据。</strong></p>
+<p>notebook 里另外 6 个代码单元做的是：环境自检、锁代码版本、校验 8 个数据文件、 读 <code>runs.jsonl</code> 做统计、跑 <code>analyze.py</code>、跑 <code>make_figures.py</code> + <code>plot_learning.py</code> （后两个单元会把 10 张图直接内嵌显示）。</p>
+<hr>
+<h2>六、做完的实验（清单）</h2>
+<h3>A. 主表（论文 Table 2）</h3>
+<table><thead><tr><th>组</th><th>配置</th><th class="num">数量</th></tr></thead><tbody><tr><td>ETT 四子集</td><td>4 数据集 × 4 长度 × 3 种子，Linear</td><td class="num">48</td></tr><tr><td>四大通道数据集</td><td>4 数据集 × 4 长度 × 3 种子，Linear</td><td class="num">48</td></tr><tr><td>补 4、5 号种子</td><td>8 数据集 × 4 长度 × 2 种子</td><td class="num">64（进行中）</td></tr><tr><td>MLP 骨干</td><td>8 数据集 × 4 长度 × 3 种子</td><td class="num">96（排队）</td></tr></tbody></table>
+<h3>B. 消融（论文 Table 4 / 6）</h3>
+<table><thead><tr><th>组</th><th>配置</th><th class="num">数量</th></tr></thead><tbody><tr><td>ETTh1：去 RCF / W=1 / W=168</td><td>2 长度 × 3 变体 × 3 种子</td><td class="num">18</td></tr><tr><td>Electricity+Traffic：去 RCF / W=1 / W=24</td><td>2 数据集 × 2 长度 × 3 变体 × 3 种子</td><td class="num">36（排队）</td></tr></tbody></table>
+<h3>C. 对照与效率（论文 Table 2 基线列 / Table 3）</h3>
+<table><thead><tr><th>组</th><th>配置</th><th class="num">数量</th></tr></thead><tbody><tr><td>同协议基线</td><td>ETTh1 × 4 长度 × {Linear, NLinear, DLinear, PatchTST, SparseTSF}</td><td class="num">20</td></tr><tr><td>参数量</td><td>各模型实测（CycleNet/Linear 9 480）</td><td class="num">—</td></tr></tbody></table>
+<p><strong>总计：已完成 138，目标 334。</strong></p>
+<h3>没做的（以及为什么）</h3>
+<ul><li><strong>长回看窗口 L=336/720</strong>（论文附录 C.2）：L 从 96 涨到 720，计算量 7.5 倍，全量要 37 小时</li><li><strong>基线扩到 8 数据集</strong>：约 8.5 小时，且这套超参对 Transformer 不利，扩完也只能说"同超参下"</li></ul>
+<hr>
+<h2>七、结果怎么看</h2>
+<pre><code>python scripts/analyze.py        # runs.jsonl → metrics_summary.csv + report_data.json
+python scripts/analyze_extra.py  # → extra.json（MLP 列 + 大通道消融）
+python scripts/make_figures.py   # 12 张图
+python scripts/plot_learning.py  # 学到的周期 Q + 预测样例 + 参数量</code></pre>
+<ul><li><code>results/report_data.json</code>：每个数据集的 本次值 / 作者日志值 / 论文值 三方对照</li><li><code>results/metrics_summary.csv</code>：按（数据集, 模型, 周期, 预测长度）聚合的均值与标准差</li><li><code>results/runs.jsonl</code>：每行一次训练的完整档案（配置 + 指标 + 耗时 + 返回码）</li><li><code>results/figures/</code>：12 张图，说明见 <code>03_图表说明与数据来源</code></li></ul></div></body></html>

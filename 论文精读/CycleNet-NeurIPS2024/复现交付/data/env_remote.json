@@ -1,0 +1,10 @@
+{
+ "torch": "2.11.0+cu128",
+ "gpu": "NVIDIA A800 80GB PCIe（容器可见 16 GiB）",
+ "driver": "580.178.04",
+ "python": "3.13.13",
+ "cpu": 48,
+ "disk_total": "15360.0 GiB",
+ "disk_free": "14568.3 GiB",
+ "shm": "64 MiB"
+}

@@ -1,0 +1,7 @@
+{
+ "CycleNet/Linear": 9480,
+ "CycleNet/MLP": 99080,
+ "Linear": 9312,
+ "NLinear": 9312,
+ "DLinear": 18624
+}

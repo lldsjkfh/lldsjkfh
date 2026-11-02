@@ -1,0 +1,309 @@
+{
+ "_note": "单一事实源。文档中的关键数字应与此一致；改完实验后重跑 make_facts.py + check_facts.py",
+ "runs": {
+  "ok": 368,
+  "fail": 5,
+  "by_phase": {
+   "abl_big": 36,
+   "ablation": 18,
+   "baseline": 20,
+   "main": 48,
+   "mlp": 4,
+   "mlp8": 96,
+   "mlp_abl": 12,
+   "new4": 60,
+   "rcf_plug": 2,
+   "seeds": 63,
+   "w_weather": 9
+  }
+ },
+ "main": {
+  "max_deviation_pct": 0.2,
+  "n_datasets": 8,
+  "n_bitwise_with_author": 7,
+  "by_dataset": {
+   "ETTh1": {
+    "ours": 0.4328,
+    "author": 0.4328,
+    "paper": 0.432,
+    "delta_pct": 0.19,
+    "author_bitwise": true
+   },
+   "ETTh2": {
+    "ours": 0.3837,
+    "author": 0.3837,
+    "paper": 0.383,
+    "delta_pct": 0.18,
+    "author_bitwise": true
+   },
+   "ETTm1": {
+    "ours": 0.3863,
+    "author": 0.3863,
+    "paper": 0.386,
+    "delta_pct": 0.08,
+    "author_bitwise": true
+   },
+   "ETTm2": {
+    "ours": 0.2723,
+    "author": 0.2723,
+    "paper": 0.272,
+    "delta_pct": 0.11,
+    "author_bitwise": true
+   },
+   "Weather": {
+    "ours": 0.2545,
+    "author": 0.2545,
+    "paper": 0.254,
+    "delta_pct": 0.2,
+    "author_bitwise": true
+   },
+   "Electricity": {
+    "ours": 0.1701,
+    "author": 0.1701,
+    "paper": 0.17,
+    "delta_pct": 0.06,
+    "author_bitwise": true
+   },
+   "Traffic": {
+    "ours": 0.4858,
+    "author": 0.4858,
+    "paper": 0.485,
+    "delta_pct": 0.16,
+    "author_bitwise": true
+   },
+   "Solar": {
+    "ours": 0.2354,
+    "author": 0.2356,
+    "paper": 0.235,
+    "delta_pct": 0.17,
+    "author_bitwise": false
+   }
+  }
+ },
+ "solar": {
+  "status": "aligned",
+  "initial_mse": 0.3073,
+  "initial_delta_pct": 30.8,
+  "final_mse": 0.2354,
+  "final_delta_pct": 0.17,
+  "root_cause": "InstanceNorm 在大量通道为 0 时放大噪声",
+  "fix": "use_revin=0",
+  "author_abs_diff": 1.6e-07
+ },
+ "mlp": {
+  "ETTh1": {
+   "ours": 0.4704,
+   "paper": 0.457,
+   "delta_pct": 2.94,
+   "n_seeds": 3
+  },
+  "ETTh2": {
+   "ours": 0.3844,
+   "paper": 0.388,
+   "delta_pct": -0.92,
+   "n_seeds": 3
+  },
+  "ETTm1": {
+   "ours": 0.3819,
+   "paper": 0.379,
+   "delta_pct": 0.76,
+   "n_seeds": 3
+  },
+  "ETTm2": {
+   "ours": 0.2701,
+   "paper": 0.266,
+   "delta_pct": 1.55,
+   "n_seeds": 3
+  },
+  "Weather": {
+   "ours": 0.2428,
+   "paper": 0.243,
+   "delta_pct": -0.08,
+   "n_seeds": 3
+  },
+  "Electricity": {
+   "ours": 0.1683,
+   "paper": 0.168,
+   "delta_pct": 0.18,
+   "n_seeds": 3
+  },
+  "Traffic": {
+   "ours": 0.4843,
+   "paper": 0.472,
+   "delta_pct": 2.6,
+   "n_seeds": 3
+  },
+  "Solar": {
+   "ours": 0.2097,
+   "paper": 0.21,
+   "delta_pct": -0.17,
+   "n_seeds": 3
+  }
+ },
+ "rcf_ablation": {
+  "big": {
+   "Electricity": {
+    "96": {
+     "full": 0.141561,
+     "norcf": 0.197562,
+     "w1": 0.197321,
+     "w24": 0.19465,
+     "rcf_gain_pct": 28.35
+    },
+    "336": {
+     "full": 0.172516,
+     "norcf": 0.211808,
+     "w1": 0.211642,
+     "w24": 0.208103,
+     "rcf_gain_pct": 18.55
+    }
+   },
+   "Traffic": {
+    "96": {
+     "full": 0.480676,
+     "norcf": 0.645213,
+     "w1": 0.645396,
+     "w24": 0.617939,
+     "rcf_gain_pct": 25.5
+    },
+    "336": {
+     "full": 0.476481,
+     "norcf": 0.605244,
+     "w1": 0.60554,
+     "w24": 0.581532,
+     "rcf_gain_pct": 21.27
+    }
+   }
+  },
+  "mlp": {
+   "ETTh1": {
+    "96": {
+     "full": 0.379755,
+     "norcf": 0.384633,
+     "gain_pct": 1.27
+    },
+    "336": {
+     "full": 0.504228,
+     "norcf": 0.509312,
+     "gain_pct": 1.0
+    }
+   },
+   "Electricity": {
+    "96": {
+     "full": 0.135596,
+     "norcf": 0.1743,
+     "gain_pct": 22.21
+    },
+    "336": {
+     "full": 0.171559,
+     "norcf": 0.196819,
+     "gain_pct": 12.83
+    }
+   }
+  },
+  "patchtst_plug": {
+   "96": {
+    "patchtst": 0.411507,
+    "patchtst_rcf": 0.411582,
+    "gain_pct": -0.02
+   },
+   "336": {
+    "patchtst": 0.494511,
+    "patchtst_rcf": 0.499094,
+    "gain_pct": -0.93
+   }
+  }
+ },
+ "w_sensitivity": {
+  "ETTh1": {
+   "official_W": 24,
+   "by_W": {
+    "1": 0.385061,
+    "24": 0.378487,
+    "168": 0.39633
+   }
+  },
+  "Weather": {
+   "official_W": 144,
+   "by_W": {
+    "24": 0.191302,
+    "96": 0.194641,
+    "144": 0.17039,
+    "168": 0.192861
+   }
+  },
+  "Electricity": {
+   "official_W": 168,
+   "by_W": {
+    "1": 0.197321,
+    "24": 0.19465,
+    "168": 0.141561
+   }
+  },
+  "Traffic": {
+   "official_W": 168,
+   "by_W": {
+    "1": 0.645396,
+    "24": 0.617939,
+    "168": 0.480676
+   }
+  }
+ },
+ "acf": {
+  "ETTh1": {
+   "official_W": 24,
+   "acf_at_W": 0.8003,
+   "lag_at_max": 2
+  },
+  "ETTh2": {
+   "official_W": 24,
+   "acf_at_W": 0.8768,
+   "lag_at_max": 2
+  },
+  "ETTm1": {
+   "official_W": 96,
+   "acf_at_W": 0.7981,
+   "lag_at_max": 2
+  },
+  "ETTm2": {
+   "official_W": 96,
+   "acf_at_W": 0.8776,
+   "lag_at_max": 2
+  },
+  "Weather": {
+   "official_W": 144,
+   "acf_at_W": 0.6027,
+   "lag_at_max": 2
+  },
+  "Electricity": {
+   "official_W": 168,
+   "acf_at_W": 0.8811,
+   "lag_at_max": 24
+  },
+  "Traffic": {
+   "official_W": 168,
+   "acf_at_W": 0.8021,
+   "lag_at_max": 168
+  },
+  "Solar": {
+   "official_W": 144,
+   "acf_at_W": 0.8497,
+   "lag_at_max": 2
+  }
+ },
+ "efficiency": {
+  "electricity_h720": {
+   "linear_params_k": 123.8,
+   "linear_macs_m": 22.19,
+   "mlp_params_k": 473.0,
+   "rfc_table": 53928
+  },
+  "paper_electricity_h720": {
+   "linear_params_k": 123.7,
+   "linear_macs_m": 22.42,
+   "mlp_params_k": 472.9,
+   "rfc_table": 53900
+  },
+  "traffic_h720_linear_params_k": 214.7
+ }
+}

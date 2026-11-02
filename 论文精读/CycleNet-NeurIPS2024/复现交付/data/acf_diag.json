@@ -1,0 +1,82 @@
+{
+ "ETTh1": {
+  "official_W": 24,
+  "n_channels": 7,
+  "acf_at_W_mean": 0.8003,
+  "acf_at_W_median": 0.8176,
+  "acf_at_W_positive_ratio": 1.0,
+  "acf_max_mean": 0.8735,
+  "lag_at_max_median": 2,
+  "lag_at_max_mode": 2
+ },
+ "ETTh2": {
+  "official_W": 24,
+  "n_channels": 7,
+  "acf_at_W_mean": 0.8768,
+  "acf_at_W_median": 0.9284,
+  "acf_at_W_positive_ratio": 1.0,
+  "acf_max_mean": 0.9556,
+  "lag_at_max_median": 2,
+  "lag_at_max_mode": 2
+ },
+ "ETTm1": {
+  "official_W": 96,
+  "n_channels": 7,
+  "acf_at_W_mean": 0.7981,
+  "acf_at_W_median": 0.8182,
+  "acf_at_W_positive_ratio": 1.0,
+  "acf_max_mean": 0.9647,
+  "lag_at_max_median": 2,
+  "lag_at_max_mode": 2
+ },
+ "ETTm2": {
+  "official_W": 96,
+  "n_channels": 7,
+  "acf_at_W_mean": 0.8776,
+  "acf_at_W_median": 0.9288,
+  "acf_at_W_positive_ratio": 1.0,
+  "acf_max_mean": 0.9803,
+  "lag_at_max_median": 2,
+  "lag_at_max_mode": 2
+ },
+ "Weather": {
+  "official_W": 144,
+  "n_channels": 21,
+  "acf_at_W_mean": 0.6027,
+  "acf_at_W_median": 0.7864,
+  "acf_at_W_positive_ratio": 0.905,
+  "acf_max_mean": 0.8615,
+  "lag_at_max_median": 2,
+  "lag_at_max_mode": 2
+ },
+ "Electricity": {
+  "official_W": 168,
+  "n_channels": 321,
+  "acf_at_W_mean": 0.8811,
+  "acf_at_W_median": 0.9052,
+  "acf_at_W_positive_ratio": 1.0,
+  "acf_max_mean": 0.9144,
+  "lag_at_max_median": 24,
+  "lag_at_max_mode": 24
+ },
+ "Traffic": {
+  "official_W": 168,
+  "n_channels": 862,
+  "acf_at_W_mean": 0.8021,
+  "acf_at_W_median": 0.8208,
+  "acf_at_W_positive_ratio": 1.0,
+  "acf_max_mean": 0.8078,
+  "lag_at_max_median": 168,
+  "lag_at_max_mode": 168
+ },
+ "Solar": {
+  "official_W": 144,
+  "n_channels": 137,
+  "acf_at_W_mean": 0.8497,
+  "acf_at_W_median": 0.8505,
+  "acf_at_W_positive_ratio": 1.0,
+  "acf_max_mean": 0.9778,
+  "lag_at_max_median": 2,
+  "lag_at_max_mode": 2
+ }
+}

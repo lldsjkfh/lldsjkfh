@@ -1,0 +1,126 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>CycleNet 论文原理文档</title><style>
+:root{
+  --ink:#1a1a1a; --ink2:#4a4a4a; --line:#d8d8d8; --bg:#ffffff;
+  --accent:#1f4e79; --accent2:#2f6db3; --soft:#f5f7fa; --warn:#b45309;
+}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;
+  font-size:10.6pt;line-height:1.75;}
+.page{max-width:900px;margin:0 auto;padding:44px 52px 64px;}
+h1{font-size:22pt;line-height:1.35;margin:0 0 6px;font-weight:700;letter-spacing:-.2px}
+h2{font-size:14.5pt;margin:34px 0 12px;padding-left:11px;border-left:4px solid var(--accent);font-weight:700}
+h3{font-size:11.8pt;margin:22px 0 8px;color:var(--accent);font-weight:700}
+h4{font-size:10.8pt;margin:16px 0 6px;font-weight:700}
+p{margin:0 0 10px}
+ul,ol{margin:0 0 12px;padding-left:22px}
+li{margin:3px 0}
+code{font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:9pt;
+  background:var(--soft);padding:1px 4px;border-radius:3px;border:1px solid #e8e8e8}
+pre{background:#f8f9fb;border:1px solid var(--line);border-left:3px solid var(--accent2);
+  border-radius:4px;padding:10px 13px;overflow-x:auto;margin:10px 0 14px}
+pre code{background:none;border:none;padding:0;font-size:8.9pt;line-height:1.6;display:block;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;margin:12px 0 16px;font-size:9.2pt}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:700}
+tr:nth-child(even) td{background:#fcfcfd}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.sub{color:var(--ink2);font-size:9.6pt}
+.meta{color:var(--ink2);font-size:9.4pt;margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.callout{background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--accent2);
+  border-radius:4px;padding:11px 15px;margin:14px 0}
+.callout.warn{border-left-color:var(--warn);background:#fdf9f3}
+.callout b{color:var(--accent)}
+figure{margin:16px 0 20px;text-align:center;page-break-inside:avoid}
+figure img{max-width:100%;border:1px solid var(--line);border-radius:3px}
+figcaption{font-size:9pt;color:var(--ink2);margin-top:7px;text-align:left;line-height:1.6}
+.tag{display:inline-block;font-size:8.4pt;padding:1px 7px;border-radius:10px;
+  background:#eaf1f8;color:var(--accent);border:1px solid #cfe0f0;margin-right:5px}
+.kpi{display:flex;gap:12px;margin:14px 0 18px;flex-wrap:wrap}
+.kpi div{flex:1 1 150px;border:1px solid var(--line);border-radius:5px;padding:10px 13px;background:#fbfcfd}
+.kpi b{display:block;font-size:16pt;color:var(--accent);line-height:1.3}
+.kpi span{font-size:8.8pt;color:var(--ink2)}
+.formula{text-align:center;font-family:"Cambria Math",Georgia,serif;font-size:10.5pt;margin:12px 0}
+.toc{font-size:9.6pt;column-count:2;column-gap:26px;margin:10px 0 6px}
+.toc a{color:var(--ink);text-decoration:none}
+.pb{page-break-before:always}
+hr{border:none;border-top:1px solid var(--line);margin:26px 0}
+.small{font-size:8.8pt;color:var(--ink2)}
+</style></head><body><div class="page"><h1>CycleNet 论文原理文档</h1><div class="meta">CycleNet: Enhancing Time Series Forecasting through Modeling Periodic Patterns · Lin, Lin, Hu, Wu, Mo, Zhong · NeurIPS 2024 Spotlight<br>本文档解释"论文想做什么、怎么做、为什么有效、结果如何"，所有论文数值均取自 PDF 原文（Table 2/3/4/6），复现数值取自本次远端实验</div><h2 id="s1">1 · 一句话概括</h2>
+<div class="callout"><b>CycleNet 的核心主张：</b>长程时间序列的可预测性主要由<b>稳定的周期结构</b>提供。与其让深度模型去"隐式地学"周期，不如把周期<b>显式地写成一个可学习的、长度固定为 W 的循环向量</b>，让模型只负责预测"扣掉周期之后剩下的残差"。这个技术叫 <b>RCF（Residual Cycle Forecasting）</b>，配上单层 Linear 或双层 MLP 就构成 CycleNet。</div>
+<p>论文发表于 NeurIPS 2024（Spotlight，平均评分 7.25，Top 1%）。它的价值不在"又一个 SOTA"，而在于<b>把 LTSF 领域一个被复杂模型掩盖的事实重新摆到台面上</b>：如果数据的可预测部分主要来自周期，那么用 Transformer 去"提取长程依赖"其实是绕远路。</p>
+<h2 id="s2">2 · 论文要解决什么问题</h2>
+<h3>2.1 LTSF 的任务设定</h3>
+<p>给定 D 个通道、长度 L 的历史窗口，预测未来 H 步：</p>
+<div class="formula">f : <b>x</b><sub>t−L+1 : t</sub> ∈ ℝ<sup>L×D</sup> ⟶ <b>x̂</b><sub>t+1 : t+H</sub> ∈ ℝ<sup>H×D</sup></div>
+<p>LTSF 的"长"体现在 H 可以到 720 步（小时级数据 = 30 天，15 分钟级 = 7.5 天）。这个尺度上，"用最近几天的均值/趋势外推"必然失效。</p>
+<h3>2.2 领域的困境：模型越来越复杂，增益越来越小</h3>
+<p>2020 年以来主流路线是用更强的序列建模能力去抓长程依赖：Informer 的稀疏注意力、Autoformer 的自相关、FEDformer 的频域、PatchTST 的 patch 化、iTransformer 的倒置注意力……但 DLinear（2023）用一层线性层就在多数基准上追平甚至超过了这些模型，这本身就是对"复杂模型必要性"的一次反证。</p>
+<p>论文的第 2 页给出了它的反问，也是整篇的动机：<b>如果构造又深又复杂的模型，目的只是更好地从长程依赖里提取周期特征，那为什么不直接对周期建模？</b></p>
+<h3>2.3 关键观察：共享的周期段</h3>
+<p>论文 Figure 1 的观察是：电力负荷、交通流量、天气这类数据的曲线，可以看作<b>同一个"一天"的模式被反复复制</b>。也就是说，一条长序列的周期分量，不需要 L 个自由度，只需要 <b>W 个</b>（W = 一个周期内的采样点数）。</p>
+<p>用一个具体数字感受这个压缩比：ETTh1 用 96 步（4 天）预测 96 步，如果按"每天一个共享模板"表示，周期部分只需要 24 个参数/通道，而不是 96 个。这种"全局共享"正是后续所有增益的来源。</p>
+<h2 id="s3" class="pb">3 · 方法：RCF 到底怎么算</h2>
+<p>RCF 分两步：<b>先用可学习循环建模周期，再对残差做预测</b>。形式化地，给定期望周期长度 W 和通道数 D：</p>
+<h3>3.1 可学习循环 Q</h3>
+<div class="formula">Q ∈ ℝ<sup>W×D</sup>，初始化 Q ← <b>0</b></div>
+<p>注意两件事：</p>
+<ul><li><b>W 是超参，不是学出来的。</b>它由数据的先验周期决定：小时级 ETTh 用 24，15 分钟级 ETTm 用 96，小时级 Electricity 用 168（日+周），Weather 用 144。论文也给了用自相关函数（ACF）确定 W 的做法（附录 B.2）。</li><li><b>Q 是全局共享的</b>：整条序列、所有 batch 共用同一份 Q，它表达的是"这个数据集的周期长什么样"，而不是"这个窗口的周期长什么样"。这是 RCF 与滑动平均类分解方法的根本区别。</li></ul>
+<h3>3.2 从 Q 到周期分量：对齐 + 重复</h3>
+<p>周期分量 C 是把 Q 循环平铺到与序列等长的虚拟序列。问题是我们不能直接把 C 切出来，因为一个样本的起点 t 落在周期内部的位置是任意的。<b>解决办法是两步操作</b>：</p>
+<ol><li><b>对齐（roll）</b>：把 Q 循环左移 <code>t mod W</code> 位，得到 Q<sup>(t)</sup>，使它的第 0 位正好对应时刻 t；</li><li><b>重复并拼接</b>：把 Q<sup>(t)</sup> 重复 ⌊L/W⌋ 次，再拼上它的前 L mod W 位，即得到输入窗口对应的周期分量 <b>c</b><sub>t−L+1 : t</sub> ∈ ℝ<sup>L×D</sup>。对预测段同理（起点换成 (t+L) mod W，长度换成 H）。</li></ol>
+<div class="formula">c<sub>t−L+1 : t</sub> = [ Q<sup>(t)</sup>, …, Q<sup>(t)</sup><sub>0 : L mod W</sub> ]，其中 Q<sup>(t)</sup> = roll(Q, t mod W)</div>
+<p>代码里这一步被写成一行索引运算（官方 <code>models/CycleNet.py</code>）：</p>
+<pre><code>gather_index = (index.view(-1,1) + torch.arange(length).view(1,-1)) % self.cycle_len
+return self.data[gather_index]      # data 就是 Q，形状 (W, D)</code></pre>
+<p class="small">这行代码是 2024 年 10 月社区贡献的加速版（原版用 roll + loop 拼接），速度快 2–3 倍而语义完全等价。理解它只需记住：<b>用模运算把"第几个周期点"算出来，再查表</b>。</p>
+<h3>3.3 残差预测三步走</h3>
+<p>有了周期分量，整个前向传播就是三行减法/加法：</p>
+<div class="formula">① <b>x′</b> = <b>x</b> − <b>c</b><sub>in</sub>　　② <b>ŷ′</b> = Backbone(<b>x′</b>)　　③ <b>ŷ</b> = <b>ŷ′</b> + <b>c</b><sub>out</sub></div>
+<p>其中 <b>c</b><sub>in</sub> 是输入窗口的周期分量，<b>c</b><sub>out</sub> 是预测窗口的周期分量（由 Q 继续向后铺）。主干 Backbone 只面对"去掉周期后剩下的东西"——它不需要再花容量去记周期，只需处理短期波动与趋势。</p>
+<h3>3.4 Instance Normalization</h3>
+<p>时间序列的均值/方差分布会漂移，训练集统计量套到测试集会失配。CycleNet 在模型输入输出两端做实例标准化（等价于不带可学习仿射参数的 RevIN）：</p>
+<div class="formula">x̃ = (x − μ) / √(σ + ε)，　ŷ = ŷ̃ · √(σ + ε) + μ</div>
+<p>μ、σ 是<b>当前输入窗口</b>的均值与标准差。<b>一个容易忽略的实现细节</b>：标准化发生在"减周期"之前，反标准化发生在"加周期"之后，所以 Q 学到的是<b>标准化空间里的周期形状</b>。这也是为什么复现时要按窗口算 μ/σ，而不能用全序列统计量。</p>
+<h3>3.5 损失函数</h3>
+<div class="formula">Loss = ‖ <b>x</b><sub>t+1 : t+H</sub> − <b>ŷ</b><sub>t+1 : t+H</sub> ‖²<sub>2</sub></div>
+<p>就是 MSE，作者刻意不做改动，以保证与其他方法的比较是公平的（换损失就等于换了比较基准）。</p>
+<h3>3.6 整体结构图</h3>
+<p>把上面几步串起来，CycleNet 的数据流是：输入 → Instance Norm → 减周期 → Linear/MLP → 加周期 → 反 Norm → 输出。可学习参数只有两块：Q（W×D）和主干（Linear 为 L×H，MLP 为 L×d + d×H）。</p>
+<div class="callout">论文 Figure 2 的示意与上式一一对应：中间灰框是 Q 的"对齐—重复"两次调用（一次给输入段、一次给预测段），两条虚线分别是"Remove Cycle"与"Restore Cycle"。理解这张图的关键是：<b>RCF 不是网络层，而是数据的进出变换</b>，因此可以插到任何模型前面。</div>
+<h2 id="s4" class="pb">4 · 为什么这样做有效</h2>
+<p>这是复现时最值得想清楚的部分。论文给了几个层次的理由，我按"从直觉到机制"排一下：</p>
+<h3>4.1 理由一：把周期从"窗口内拟合"变成"全局估计"</h3>
+<p>DLinear/Autoformer/FEDformer 的分解都在<b>窗口内部</b>做：用滑动平均（MOV）把序列拆成趋势+季节。这类做法有两个结构性缺陷（论文第 4 页明确指出）：</p>
+<ul><li>窗口只有 L 步，MOV 核长 25，那么"季节分量"本身就带着趋势残余，且<b>无法看到窗口之外</b>；</li><li>为得到等长序列必须在两端做零填充，<b>边界被扭曲</b>，而预测恰恰从边界开始。</li></ul>
+<p>更关键的是一个理论观察：<b>在窗口内做趋势/季节分解后再接线性层，本质上等价于一个（弱）约束的线性回归</b>，也就是说训练收敛后它并不比纯 Linear 更强。这解释了为什么 DLinear 与 Linear 的差距很小。而 RCF 的周期分量来自<b>整个训练集共享的 Q</b>，不受 L 限制——<b>这是 RCF 能突破"线性模型天花板"的唯一原因</b>。</p>
+<h3>4.2 理由二：Q 在优化上等价于"按相位求条件均值"</h3>
+<p>这一点论文没有展开写，但可以从梯度直接看出来：Q 的某个元素 q<sub>w,d</sub> 会在<b>所有 batch、所有能被"w"这个相位命中的时间步</b>上被反传，而它进入 loss 的方式是"y − (backbone(·) + q)"。因此在训练早期（backbone 尚未拟合出结构时），使 loss 下降最快的 q 值就是<b>该相位上残差的均值</b>——即"这个数据集在第 w 个周期点上的平均水平"。</p>
+<p>所以学出来的 Q，形状应当非常接近"训练集按相位平均后 z-score 的曲线"。本次复现的 <b>图 7(a)</b> 正是这个验证：学到的 Q 与经验日曲线几乎重叠（相关系数可在 notebook 中复核）。这说明 RCF 并没有在学什么玄妙的东西，它学的是<b>一个参数化的季节均值表</b>，只不过这张表是与主干联合优化、并且可以逐通道不同的。</p>
+<h3>4.3 理由三：参数效率高一个数量级</h3>
+<p>CycleNet/Linear 的可学习参数 = <b>L×H</b>（主干权重）+ <b>H</b>（主干偏置）+ <b>W×D</b>（周期表）。ETTh1（L=96, H=96, W=24, D=7）= 9216 + 96 + 168 = <b>9,480</b> 个参数；同配置下纯 Linear 是 9,312，也就是说 <b>RCF 只增加了 168 个参数（+1.8%）</b>。同期 Transformer 类模型是百万级（PatchTST 10.74 M、iTransformer 5.15 M），相差 2–3 个数量级。</p>
+<p>为什么参数少还能更准？因为周期结构被<b>先验</b>固定了（W 已知、模板共享），模型不需要用参数去"表示"它，只需要学残差。这是归纳偏置带来的效率红利。</p>
+<h3>4.4 理由四：通道独立 = 每通道一张周期表</h3>
+<p>RCF 的 Q 是 (W, D) 的，<b>每个通道有自己的周期向量</b>，但主干 Linear 在通道间共享权重。这种"周期逐通道、残差共享"的组合，使得 ETTh1 的 7 个传感器（油温、负载等）可以有完全不同的日内形状，同时参数量不随通道数膨胀。</p>
+<p>这也直接解释了论文承认的短板：<b>通道独立意味着模型看不到通道间的相互作用</b>，所以在 Traffic 这种"上游路口影响下游路口"的空间耦合数据上，它输给了 iTransformer。作者的后续工作 TQNet（ICML 2025）正是为补这个洞而做的。</p>
+<h2 id="s5" class="pb">5 · 论文报告的结果</h2>
+<h3>5.1 主表（Table 2）：4 个预测长度平均的 MSE/MAE</h3>
+<table class=""><thead><tr><th>数据集</th><th class="num">iTransformer</th><th class="num">PatchTST</th><th class="num">DLinear</th><th class="num">CycleNet/Linear</th><th class="num">CycleNet/MLP</th><th>谁最好</th></tr></thead><tbody><tr><td>ETTh1</td><td class="num">0.454</td><td class="num">0.469</td><td class="num">0.456</td><td class="num">0.432</td><td class="num">0.457</td><td>CycleNet/Linear</td></tr><tr><td>ETTh2</td><td class="num">0.383</td><td class="num">0.387</td><td class="num">0.559</td><td class="num">0.383</td><td class="num">0.388</td><td>并列（CycleNet/Linear 与 iTransformer）</td></tr><tr><td>ETTm1</td><td class="num">0.407</td><td class="num">0.387</td><td class="num">0.403</td><td class="num">0.386</td><td class="num">0.379</td><td>CycleNet/MLP</td></tr><tr><td>ETTm2</td><td class="num">0.288</td><td class="num">0.281</td><td class="num">0.350</td><td class="num">0.272</td><td class="num">0.266</td><td>CycleNet/MLP</td></tr><tr><td>Electricity</td><td class="num">0.178</td><td class="num">0.205</td><td class="num">0.212</td><td class="num">0.170</td><td class="num">0.168</td><td>CycleNet/MLP</td></tr><tr><td>Solar-Energy</td><td class="num">0.233</td><td class="num">0.270</td><td class="num">0.330</td><td class="num">0.235</td><td class="num">0.210</td><td>CycleNet/MLP</td></tr><tr><td>Traffic</td><td class="num">0.428</td><td class="num">0.481</td><td class="num">0.625</td><td class="num">0.485</td><td class="num">0.472</td><td>iTransformer（CycleNet 唯一落后项）</td></tr><tr><td>Weather</td><td class="num">0.258</td><td class="num">0.259</td><td class="num">0.265</td><td class="num">0.254</td><td class="num">0.243</td><td>CycleNet/MLP</td></tr></tbody></table>
+<p>论文自己的总结是：CycleNet/MLP 综合第一、CycleNet/Linear 综合第二；在高维（>100 通道）的 Electricity/Solar 上 MLP 更有优势（非线性映射能力），在 Traffic 上因缺少通道交互而不敌 iTransformer。</p>
+<h3>5.2 效率（Table 3，Electricity，L=96，H=720）</h3>
+<table class=""><thead><tr><th>模型</th><th class="num">参数量</th><th class="num">MACs</th><th class="num">每 epoch 训练时间</th></tr></thead><tbody><tr><td>Informer</td><td class="num">12.53 M</td><td class="num">3.97 G</td><td class="num">70.1 s</td></tr><tr><td>Autoformer</td><td class="num">12.22 M</td><td class="num">4.41 G</td><td class="num">107.7 s</td></tr><tr><td>FEDformer</td><td class="num">17.98 M</td><td class="num">4.41 G</td><td class="num">238.7 s</td></tr><tr><td>PatchTST</td><td class="num">10.74 M</td><td class="num">25.87 G</td><td class="num">129.5 s</td></tr><tr><td>iTransformer</td><td class="num">5.15 M</td><td class="num">1.65 G</td><td class="num">35.1 s</td></tr><tr><td>CycleNet/MLP</td><td class="num">472.9 K</td><td class="num">134.84 M</td><td class="num">30.8 s</td></tr><tr><td>CycleNet/Linear</td><td class="num">123.7 K</td><td class="num">22.42 M</td><td class="num">29.6 s</td></tr><tr><td>其中 RCF 部分</td><td class="num">53.9 K</td><td class="num">0</td><td class="num">12.8 s</td></tr></tbody></table>
+<p>RCF 部分的 MACs 为 0（只有查表，没有乘加），参数量 53.9 K（168×321），这就是"降低 90% 以上参数量"这句话的来源。</p>
+<h3>5.3 消融（Table 4）：RCF 插到任何主干上都有效</h3>
+<table class=""><thead><tr><th>主干</th><th>数据集</th><th>H=96</th><th>H=192</th><th>H=336</th><th>H=720</th></tr></thead><tbody><tr><td>Linear</td><td>Electricity</td><td>0.197 → 0.141（−28.6%）</td><td>0.197 → 0.155（−21.4%）</td><td>0.212 → 0.172（−18.8%）</td><td>0.253 → 0.210（−17.1%）</td></tr><tr><td>Linear</td><td>Traffic</td><td>0.645 → 0.480（−25.6%）</td><td>0.598 → 0.482（−19.5%）</td><td>0.605 → 0.476（−21.3%）</td><td>0.643 → 0.503（−21.8%）</td></tr><tr><td>MLP</td><td>Electricity</td><td>0.175 → 0.136（−22.2%）</td><td>0.181 → 0.152（−15.9%）</td><td>0.197 → 0.170（−13.6%）</td><td>0.240 → 0.212（−11.6%）</td></tr><tr><td>PatchTST</td><td>Electricity</td><td>0.168 → 0.136（−19.0%）</td><td>0.176 → 0.153（−13.0%）</td><td>0.193 → 0.170（−11.7%）</td><td>0.233 → 0.211（−9.4%）</td></tr><tr><td>iTransformer</td><td>Electricity</td><td>0.148 → 0.136（−8.1%）</td><td>0.162 → 0.153（−5.6%）</td><td>0.178 → 0.168（−5.6%）</td><td>0.225 → 0.194（−13.8%）</td></tr></tbody></table>
+<p>这张表回答了两个疑问：<b>RCF 是不是只会对简单模型有用？</b>不是，PatchTST、iTransformer 加上 RCF 也降了 5%–19%。<b>RCF 是不是只是变相加了参数？</b>不是，参数量增量只有 W×D 那么多，而且加在"周期表"上而不是"拟合能力"上。</p>
+<h3>5.4 周期长度敏感性（Table 6，H=96）</h3>
+<table class=""><thead><tr><th>数据集</th><th>W=168</th><th>W=144</th><th>W=96</th><th>W=24（正确）</th><th>不用 RCF</th></tr></thead><tbody><tr><td>ETTh1</td><td>0.395</td><td>0.384</td><td>0.383</td><td><b>0.377</b></td><td>0.384</td></tr><tr><td>ETTm1</td><td>0.350</td><td>0.340</td><td>0.325</td><td>0.348</td><td><b>0.351</b>（正确 W=96 时为 0.325）</td></tr><tr><td>Electricity</td><td>0.142</td><td>0.196</td><td>0.196</td><td><b>0.195</b>（正确 W=168）</td><td>0.197</td></tr><tr><td>Traffic</td><td>0.480</td><td>0.617</td><td>0.617</td><td><b>0.618</b>（正确 W=168）</td><td>0.645</td></tr><tr><td>Solar-Energy</td><td>0.289</td><td>0.208</td><td>0.276</td><td>0.287</td><td><b>0.286</b>（正确 W=144 时为 0.208）</td></tr></tbody></table>
+<p>读法：<b>W 设对时收益最大，设错时退化到"几乎等于不用 RCF"</b>。论文因此强调 W 必须先验推定（按采样频率 + 日/周周期），或用 ACF 找峰值滞后。注意 Electricity/Traffic 的 W=168（日+周）明显优于 W=24（仅日），说明 RCF 能同时吸收多个层级的周期——这是单一周期的 MOV 做不到的。</p>
+<h2 id="s6">6 · 论文自己承认的局限</h2>
+<table class=""><thead><tr><th>局限</th><th>说明</th><th>典型反例</th></tr></thead><tbody><tr><td>周期长度不稳定</td><td>只能学固定长度 W 的周期</td><td>心电图 ECG：心率随状态变化</td></tr><tr><td>通道间周期不同</td><td>所有通道共用同一个 W（虽然 Q 逐通道可学）</td><td>一个数据集里混了日周期与周周期设备</td></tr><tr><td>对异常值敏感</td><td>RCF 学的是全局平均周期，离群点会把某个相位的均值拉偏</td><td>含尖峰故障的工业传感器</td></tr><tr><td>只适合中程周期</td><td>日/周级别有效，年周期（如季节性农业）难以覆盖</td><td>年度用电/气候数据</td></tr><tr><td>缺少通道交互</td><td>通道独立建模，无法利用空间耦合</td><td>Traffic（已被 iTransformer 超过）</td></tr></tbody></table>
+<h2 id="s7" class="pb">7 · 本次复现如何对应论文的每个论断</h2>
+<p>复现不是"跑出数字"，而是<b>用独立实验去检验论文的每条主张</b>。对应关系如下：</p>
+<table class=""><thead><tr><th>论文论断</th><th>复现用的实验</th><th>结果</th><th>结论</th></tr></thead><tbody><tr><td>CycleNet 用极简主干就能达到 SOTA</td><td>论文 Table 2 全部 8 个数据集 × 4 预测长度 × 3 种子，CycleNet/Linear</td><td>8 个数据集全部与论文 Table 2 偏差 ≤0.2%（含 Solar，见文档一 §0）</td><td>支持</td></tr><tr><td>RCF 是增益的来源（消融）</td><td>ETTh1 上关闭 RCF（<code>--use_rcf 0</code>），H=96/336 × 3 种子</td><td>见文档一的表 5.1；方向与论文 Table 6 中 ETTh1 行一致</td><td>支持（ETTh1 周期性弱，绝对幅度小）</td></tr><tr><td>W 必须与真实周期匹配</td><td>ETTh1 上取 W∈{1,24,168}</td><td>W=24 最优，W=168 与 W=1 均变差</td><td>支持</td></tr><tr><td>RCF 对 MLP 主干同样有效</td><td>ETTh1 上 CycleNet/MLP × 4 horizons</td><td>见文档三的图 5</td><td>支持</td></tr><tr><td>效率优势（参数少 1–2 个数量级）</td><td>统计各模型可学习参数量</td><td>CycleNet/Linear 9,480，PatchTST 级模型为百万量级</td><td>支持</td></tr><tr><td>Traffic 上不如 iTransformer（通道交互）</td><td>Traffic × 4 预测长度 × 3 种子，CycleNet/Linear</td><td>复现得到平均 MSE 见文档一第 5 节；与论文同为「明显高于 iTransformer 的 0.428」</td><td>本复现只跑了 CycleNet，没有跑 iTransformer，故只验证了“CycleNet 在 Traffic 上偏弱”这一半</td></tr></tbody></table>
+<h2 id="s8">8 · 三句话记住这篇论文</h2>
+<ol><li><b>问题</b>：LTSF 的难点不是"依赖太长"，而是"周期没被显式建模"，导致模型把容量浪费在重复学习同一条周期曲线上。</li><li><b>方法</b>：用一张全局共享、逐通道可学的周期表 Q∈ℝ<sup>W×D</sup>，按 <code>t mod W</code> 对齐铺满输入与输出段，让主干只预测残差（RCF）。</li><li><b>意义</b>：用 10 万级参数打败千万级 Transformer，说明在强周期数据上，<b>正确的归纳偏置比模型容量更值钱</b>；它的短板（通道独立、固定周期）也直接指向了后续工作 TQNet 的改进方向。</li></ol></div></body></html>

@@ -1,0 +1,22 @@
+{
+  "purpose": "公平性检查：只把 PatchTST 的学习率从同协议基线的 0.01 改为其论文常用的 1e-4，其余全部保持一致（ETTh1, L=96, batch=256, train_epochs=30 上限, patience=5, seed=2024, num_workers=0, 同数据划分与同评估脚本）。",
+  "protocol": {
+    "dataset": "ETTh1",
+    "seq_len": 96,
+    "batch_size": 256,
+    "train_epochs_cap": 30,
+    "patience": 5,
+    "seed": 2024,
+    "changed_vs_baseline": ["learning_rate 0.01 -> 0.0001"]
+  },
+  "runs": [
+    {"pred_len": 96, "lr": 0.0001, "mse": 0.4058345556259155, "mae": 0.4162902235984802,
+     "log": "logs/fair_PatchTST_H96.log", "note": "跑满早停，与 lr=0.01 的 0.411507 相比 -1.4%"},
+    {"pred_len": 336, "lr": 0.0001, "mse": 0.5121407508850098, "mae": 0.4778194725513458,
+     "log": "logs/fair_PatchTST_H336.log", "note": "第 19 epoch 早停，与 lr=0.01 的 0.494511 相比 +3.6%（更差）"}
+  ],
+  "reference_same_protocol_lr001": {"96": 0.411507, "192": 0.468472, "336": 0.494511, "720": 0.5722},
+  "patchtst_avg_over_4_horizons": 0.486672,
+  "paper_table2_patchtst_etth1_avg": 0.469,
+  "conclusion": "换学习率后 H=96 略好、H=336 更差，方向不一致；4 个 horizon 的 PatchTST 平均 MSE 0.4867 与论文 Table 2 引用值 0.469 仅差 3.8%，说明本实现没有跑坏。因此 CycleNet 在这套协议下的领先（0.4325 vs 0.4867，约 11%）是结构性的，不是超参运气；但也不宜反推为对所有 Transformer 的普遍优势。"
+}

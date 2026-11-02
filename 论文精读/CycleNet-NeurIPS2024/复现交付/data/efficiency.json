@@ -1,0 +1,282 @@
+{
+ "ETTh1": {
+  "enc_in": 7,
+  "cycle": 24,
+  "batch": 256,
+  "by_horizon": {
+   "96": {
+    "cycle_table": 168,
+    "linear_params": 9480,
+    "linear_macs": 64512,
+    "mlp_params": 99080,
+    "mlp_macs": 688128
+   },
+   "192": {
+    "cycle_table": 168,
+    "linear_params": 18792,
+    "linear_macs": 129024,
+    "mlp_params": 148328,
+    "mlp_macs": 1032192
+   },
+   "336": {
+    "cycle_table": 168,
+    "linear_params": 32760,
+    "linear_macs": 225792,
+    "mlp_params": 222200,
+    "mlp_macs": 1548288
+   },
+   "720": {
+    "cycle_table": 168,
+    "linear_params": 70008,
+    "linear_macs": 483840,
+    "mlp_params": 419192,
+    "mlp_macs": 2924544
+   }
+  }
+ },
+ "ETTh2": {
+  "enc_in": 7,
+  "cycle": 24,
+  "batch": 256,
+  "by_horizon": {
+   "96": {
+    "cycle_table": 168,
+    "linear_params": 9480,
+    "linear_macs": 64512,
+    "mlp_params": 99080,
+    "mlp_macs": 688128
+   },
+   "192": {
+    "cycle_table": 168,
+    "linear_params": 18792,
+    "linear_macs": 129024,
+    "mlp_params": 148328,
+    "mlp_macs": 1032192
+   },
+   "336": {
+    "cycle_table": 168,
+    "linear_params": 32760,
+    "linear_macs": 225792,
+    "mlp_params": 222200,
+    "mlp_macs": 1548288
+   },
+   "720": {
+    "cycle_table": 168,
+    "linear_params": 70008,
+    "linear_macs": 483840,
+    "mlp_params": 419192,
+    "mlp_macs": 2924544
+   }
+  }
+ },
+ "ETTm1": {
+  "enc_in": 7,
+  "cycle": 96,
+  "batch": 256,
+  "by_horizon": {
+   "96": {
+    "cycle_table": 672,
+    "linear_params": 9984,
+    "linear_macs": 64512,
+    "mlp_params": 99584,
+    "mlp_macs": 688128
+   },
+   "192": {
+    "cycle_table": 672,
+    "linear_params": 19296,
+    "linear_macs": 129024,
+    "mlp_params": 148832,
+    "mlp_macs": 1032192
+   },
+   "336": {
+    "cycle_table": 672,
+    "linear_params": 33264,
+    "linear_macs": 225792,
+    "mlp_params": 222704,
+    "mlp_macs": 1548288
+   },
+   "720": {
+    "cycle_table": 672,
+    "linear_params": 70512,
+    "linear_macs": 483840,
+    "mlp_params": 419696,
+    "mlp_macs": 2924544
+   }
+  }
+ },
+ "ETTm2": {
+  "enc_in": 7,
+  "cycle": 96,
+  "batch": 256,
+  "by_horizon": {
+   "96": {
+    "cycle_table": 672,
+    "linear_params": 9984,
+    "linear_macs": 64512,
+    "mlp_params": 99584,
+    "mlp_macs": 688128
+   },
+   "192": {
+    "cycle_table": 672,
+    "linear_params": 19296,
+    "linear_macs": 129024,
+    "mlp_params": 148832,
+    "mlp_macs": 1032192
+   },
+   "336": {
+    "cycle_table": 672,
+    "linear_params": 33264,
+    "linear_macs": 225792,
+    "mlp_params": 222704,
+    "mlp_macs": 1548288
+   },
+   "720": {
+    "cycle_table": 672,
+    "linear_params": 70512,
+    "linear_macs": 483840,
+    "mlp_params": 419696,
+    "mlp_macs": 2924544
+   }
+  }
+ },
+ "Weather": {
+  "enc_in": 21,
+  "cycle": 144,
+  "batch": 256,
+  "by_horizon": {
+   "96": {
+    "cycle_table": 3024,
+    "linear_params": 12336,
+    "linear_macs": 193536,
+    "mlp_params": 101936,
+    "mlp_macs": 2064384
+   },
+   "192": {
+    "cycle_table": 3024,
+    "linear_params": 21648,
+    "linear_macs": 387072,
+    "mlp_params": 151184,
+    "mlp_macs": 3096576
+   },
+   "336": {
+    "cycle_table": 3024,
+    "linear_params": 35616,
+    "linear_macs": 677376,
+    "mlp_params": 225056,
+    "mlp_macs": 4644864
+   },
+   "720": {
+    "cycle_table": 3024,
+    "linear_params": 72864,
+    "linear_macs": 1451520,
+    "mlp_params": 422048,
+    "mlp_macs": 8773632
+   }
+  }
+ },
+ "Electricity": {
+  "enc_in": 321,
+  "cycle": 168,
+  "batch": 64,
+  "by_horizon": {
+   "96": {
+    "cycle_table": 53928,
+    "linear_params": 63240,
+    "linear_macs": 2958336,
+    "mlp_params": 152840,
+    "mlp_macs": 31555584
+   },
+   "192": {
+    "cycle_table": 53928,
+    "linear_params": 72552,
+    "linear_macs": 5916672,
+    "mlp_params": 202088,
+    "mlp_macs": 47333376
+   },
+   "336": {
+    "cycle_table": 53928,
+    "linear_params": 86520,
+    "linear_macs": 10354176,
+    "mlp_params": 275960,
+    "mlp_macs": 71000064
+   },
+   "720": {
+    "cycle_table": 53928,
+    "linear_params": 123768,
+    "linear_macs": 22187520,
+    "mlp_params": 472952,
+    "mlp_macs": 134111232
+   }
+  }
+ },
+ "Traffic": {
+  "enc_in": 862,
+  "cycle": 168,
+  "batch": 64,
+  "by_horizon": {
+   "96": {
+    "cycle_table": 144816,
+    "linear_params": 154128,
+    "linear_macs": 7944192,
+    "mlp_params": 243728,
+    "mlp_macs": 84738048
+   },
+   "192": {
+    "cycle_table": 144816,
+    "linear_params": 163440,
+    "linear_macs": 15888384,
+    "mlp_params": 292976,
+    "mlp_macs": 127107072
+   },
+   "336": {
+    "cycle_table": 144816,
+    "linear_params": 177408,
+    "linear_macs": 27804672,
+    "mlp_params": 366848,
+    "mlp_macs": 190660608
+   },
+   "720": {
+    "cycle_table": 144816,
+    "linear_params": 214656,
+    "linear_macs": 59581440,
+    "mlp_params": 563840,
+    "mlp_macs": 360136704
+   }
+  }
+ },
+ "Solar": {
+  "enc_in": 137,
+  "cycle": 144,
+  "batch": 64,
+  "by_horizon": {
+   "96": {
+    "cycle_table": 19728,
+    "linear_params": 29040,
+    "linear_macs": 1262592,
+    "mlp_params": 118640,
+    "mlp_macs": 13467648
+   },
+   "192": {
+    "cycle_table": 19728,
+    "linear_params": 38352,
+    "linear_macs": 2525184,
+    "mlp_params": 167888,
+    "mlp_macs": 20201472
+   },
+   "336": {
+    "cycle_table": 19728,
+    "linear_params": 52320,
+    "linear_macs": 4419072,
+    "mlp_params": 241760,
+    "mlp_macs": 30302208
+   },
+   "720": {
+    "cycle_table": 19728,
+    "linear_params": 89568,
+    "linear_macs": 9469440,
+    "mlp_params": 438752,
+    "mlp_macs": 57237504
+   }
+  }
+ }
+}

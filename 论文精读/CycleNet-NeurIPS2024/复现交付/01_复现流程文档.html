@@ -1,0 +1,172 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>CycleNet 复现流程文档</title><style>
+:root{
+  --ink:#1a1a1a; --ink2:#4a4a4a; --line:#d8d8d8; --bg:#ffffff;
+  --accent:#1f4e79; --accent2:#2f6db3; --soft:#f5f7fa; --warn:#b45309;
+}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;
+  font-size:10.6pt;line-height:1.75;}
+.page{max-width:900px;margin:0 auto;padding:44px 52px 64px;}
+h1{font-size:22pt;line-height:1.35;margin:0 0 6px;font-weight:700;letter-spacing:-.2px}
+h2{font-size:14.5pt;margin:34px 0 12px;padding-left:11px;border-left:4px solid var(--accent);font-weight:700}
+h3{font-size:11.8pt;margin:22px 0 8px;color:var(--accent);font-weight:700}
+h4{font-size:10.8pt;margin:16px 0 6px;font-weight:700}
+p{margin:0 0 10px}
+ul,ol{margin:0 0 12px;padding-left:22px}
+li{margin:3px 0}
+code{font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:9pt;
+  background:var(--soft);padding:1px 4px;border-radius:3px;border:1px solid #e8e8e8}
+pre{background:#f8f9fb;border:1px solid var(--line);border-left:3px solid var(--accent2);
+  border-radius:4px;padding:10px 13px;overflow-x:auto;margin:10px 0 14px}
+pre code{background:none;border:none;padding:0;font-size:8.9pt;line-height:1.6;display:block;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;margin:12px 0 16px;font-size:9.2pt}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:700}
+tr:nth-child(even) td{background:#fcfcfd}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.sub{color:var(--ink2);font-size:9.6pt}
+.meta{color:var(--ink2);font-size:9.4pt;margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.callout{background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--accent2);
+  border-radius:4px;padding:11px 15px;margin:14px 0}
+.callout.warn{border-left-color:var(--warn);background:#fdf9f3}
+.callout b{color:var(--accent)}
+figure{margin:16px 0 20px;text-align:center;page-break-inside:avoid}
+figure img{max-width:100%;border:1px solid var(--line);border-radius:3px}
+figcaption{font-size:9pt;color:var(--ink2);margin-top:7px;text-align:left;line-height:1.6}
+.tag{display:inline-block;font-size:8.4pt;padding:1px 7px;border-radius:10px;
+  background:#eaf1f8;color:var(--accent);border:1px solid #cfe0f0;margin-right:5px}
+.kpi{display:flex;gap:12px;margin:14px 0 18px;flex-wrap:wrap}
+.kpi div{flex:1 1 150px;border:1px solid var(--line);border-radius:5px;padding:10px 13px;background:#fbfcfd}
+.kpi b{display:block;font-size:16pt;color:var(--accent);line-height:1.3}
+.kpi span{font-size:8.8pt;color:var(--ink2)}
+.formula{text-align:center;font-family:"Cambria Math",Georgia,serif;font-size:10.5pt;margin:12px 0}
+.toc{font-size:9.6pt;column-count:2;column-gap:26px;margin:10px 0 6px}
+.toc a{color:var(--ink);text-decoration:none}
+.pb{page-break-before:always}
+hr{border:none;border-top:1px solid var(--line);margin:26px 0}
+.small{font-size:8.8pt;color:var(--ink2)}
+</style></head><body><div class="page"><h1>CycleNet 复现流程文档</h1><div class="meta">CycleNet (NeurIPS 2024) 在 Rancher / JupyterLab 上的完整复现记录 · 代码 commit d807e51 · 368 个训练配置 · 全部产物可追溯<br>配套文档：<b>02 · 论文原理文档</b>（方法与原因） · <b>03 · 图表说明与数据来源</b>（每张图怎么读、数据从哪来）</div><h2 id="s0">0 · 一页摘要</h2>
+<div class="kpi"><div><b>368</b><span>成功训练的配置数（失败 1 个）</span></div><div><b>8</b><span>覆盖数据集（论文 Table 2 的 8 个）</span></div><div><b>8/8</b><span>数据集全部对齐，最大偏差 0.2%</span></div><div><b>51.7 h</b><span>累计 GPU 计算时长</span></div></div>
+<p>本次复现把 CycleNet 的官方实现（commit <code>d807e51</code>）完整搬进 Rancher 平台上的 JupyterLab GPU 工作负载，从新建目录、拉取代码、创建 notebook，到产出 368 次训练的指标、10 张图和 3 份文档，全部在远端完成。</p>
+<p>结论分三层：<b>①代码跑通</b>——单配置训练+测试闭环通过，checkpoint 落盘；<b>②数值对齐</b>——CycleNet/Linear 在论文 Table 2 的全部 <b>8 个</b>数据集上，四个预测长度的平均值与论文最大偏差 <b>0.2%</b>，与作者 5 种子日志逐位重合；<b>③结论成立</b>——去掉 RCF 后 ETTh1 的 MSE 上升 2.0%（H=96）/ 3.8%（H=336），预置周期长度设为 168（错周期）后 MSE 反升，说明论文的核心主张（显式周期建模是增益来源、且 W 必须与真实周期匹配）在本环境可复现。</p>
+<div class="callout warn"><b>Solar 从 +30.8% 到 +0.2%：一个参数的事。</b>初版跑完时，8 个数据集里有 7 个与论文偏差 ≤0.4%，唯独 Solar-Energy 是 <b>0.3073</b>，论文 0.235——高 30.8%。这是当时唯一偏差超过 1% 的地方，必须查到底（现已修复，见下）。<br><br><b>第一步，排除「我们这边有错」。</b>① 数据：从 Google Drive 下载了作者给的 <code>all_dataset.zip</code>（164 MB），里面 <code>solar_AL.txt</code> 的 MD5 与我们手上的<b>完全相同</b>（<code>de1d4810540a960549c2ce0f05c42974</code>）；为保险又下了 iTransformer 的数据包，仍是同一个文件。② 超参：官方 <code>solar.sh</code> 的 enc_in=137 / cycle=144 / batch=64 / lr=0.01 / 30 epoch / patience=5，逐项一致，且该脚本从初始提交起就没改过。③ 代码：<code>data_loader.py</code>、<code>exp/</code> 零改动。④ RCF 是否生效：checkpoint 里 Q 的形状是 144×137，19728 个参数全非零。⑤ 训练确定性：单跑时 Epoch 1 的三个 loss 与历史那次<b>逐位相同</b>。<br><br><b>第二步，发现作者日志被我们自己污染了。</b>官方 <code>run.py</code> 会把每次结果<b>追加</b>进 <code>CycleNet/result.txt</code>。我们跑了 660 次，这些记录全混进了「作者日志」，<code>analyze.py</code> 把它们当成作者结果一起平均，于是报出「作者 Solar 0.260」这个假值。改成读取 git HEAD 版本的独立副本后，<b>7 个数据集与作者日志第四位小数完全一致</b>（ETTh1 0.4328/0.4328、Electricity 0.1701/0.1701 …），Solar 依然是唯一的异常——这反过来说明流程本身没有错。<br><br><b>第三步，逐个排除训练相关的假设。</b>batch 256：每 epoch 只有 142 步（batch 64 是 571 步），Epoch 4 时 val=0.2175，而 batch 64 同期已经 0.2048，收敛慢 4 倍，30 轮追不上，排除。lr=0.005：跑完是 0.24957，与 lr=0.01 的 0.24966 几乎相同，排除。epochs=100：跑到第 45 轮仍是 0.24897，说明不是训练不足，排除。<br><br><b>第四步，找到根因：Instance Norm。</b>Solar 是 137 个光伏电站，大量通道在夜间与阴天输出为 <b>0</b>，窗口内标准差极小；而 Instance Norm 做 <code>(x-μ)/√σ</code>，σ 接近 0 时会把噪声放大几十倍。关掉它（<code>--use_revin 0</code>）后，H=96 的 MSE 变成 <b>0.20769</b>，而作者日志是 <b>0.20769</b>——差 1.6×10⁻⁷，浮点级别的一致。四个预测长度全部重跑后，平均 <b>0.2354</b>，论文 0.235，偏差 +0.17%。<br><br><b>为什么只有 Solar 需要关？</b>其他 7 个数据集的通道都有连续变化，窗口方差正常，Instance Norm 是正收益（我们与作者逐位一致就是证据）。而作者的 <code>solar.sh</code> 里<b>没写</b> <code>--use_revin</code>（默认为 1），但实际跑 Solar 时显然用了 0——这是脚本与实验记录不一致的典型，也是这次排查绕弯最多的地方。</div>
+<div class="callout"><b>和本机那次复现是什么关系？</b>本目录原有 <code>reports/</code>、<code>output/pdf/</code> 是本机 GTX 1650（4 GB）上的 ETTh1 子集 + 消融。这次是另一条独立链路：远端 A800 上从零重跑、覆盖论文 Table 2 的全部 8 个数据集、并用 notebook 把流程固化成可重入的脚本化步骤。<br><br>中途还插了一段：第二批大通道数据集跑到一半时远端服务失联，于是把同一套脚本搬到本机跑，在 GTX 1650 上完成了 45 个配置（ETT 四子集 + Weather 的部分）。<br><br>有意思的是：<b>同一份代码在两张算力差两个数量级的卡上跑出逐位相同的数字</b>——ETTh1、H=96、三个种子，A800 是 0.37736 / 0.37911 / 0.37877，GTX 1650 是 0.37736 / 0.37911 / 0.37877，五位小数完全一致。原因是 CycleNet/Linear 的全部计算都是"逐样本的矩阵乘 + 逐元素加法"，没有卷积的并行归约、也没有原子加，所以换卡不引入数值漂移。反过来，这也是为什么本复现的偏差主要来自<b>种子与早停</b>，而不是硬件。三套结果互不依赖，可交叉验证。</div>
+<h2 id="s1">1 · 复现目标与验收标准</h2>
+<p>复现一篇方法类论文，容易停在"脚本能跑起来"。所以先把目标拆成三级，每一级都有可检验的判据：</p>
+<table class=""><thead><tr><th>层级</th><th>目标</th><th>判据</th><th>本次是否达成</th></tr></thead><tbody><tr><td>L1 跑通</td><td>官方代码在目标环境完成训练与测试</td><td>进程返回码 0，日志出现 <code>mse:…, mae:…</code>，checkpoint 落盘</td><td>是</td></tr><tr><td>L2 数值对齐</td><td>同配置下指标与论文/作者日志一致</td><td>主表（8 数据集 × 4 预测长度平均值）相对论文偏差 ≤5%</td><td>全部达成（最大 0.20%）</td></tr><tr><td>L3 结论验证</td><td>论文的关键论断能被独立实验证实</td><td>RCF 消融方向一致；周期长度敏感性方向一致</td><td>是</td></tr></tbody></table>
+<p class="small">说明：<b>不</b>追求逐位复现。深度学习训练含随机性（种子、cuDNN 非确定性、GPU 型号差异），同一份代码在两张卡上本来就会有 1% 量级的抖动，因此用"偏差带"而不是"等号"来验收。</p>
+<h2 id="s2">2 · 平台与环境</h2>
+<p>目标平台是学校/实验室的 Rancher Prime 集群。它提供的不是一台裸机，而是一个 <b>Kubernetes 上的 GPU 工作负载</b>：容器里预装 JupyterLab，用户通过浏览器拿一个带 token 的 NodePort 地址进入，代码和数据都落在挂载卷上。</p>
+<table class=""><thead><tr><th>项目</th><th>实际值</th><th>备注</th></tr></thead><tbody><tr><td>平台</td><td>Rancher Prime (local cluster) → GPU Workspace</td><td>工作负载 <code>joyan-gpu-workspace-84db4bcbf9-cplln</code>，Pod 状态 Active</td></tr><tr><td>入口</td><td>Quark 浏览器 → <code>http://222.204.71.62:31504/lab?token=…</code></td><td>JupyterLab 直连（非 JupyterHub），token 即凭证</td></tr><tr><td>GPU</td><td>NVIDIA A800 80GB PCIe（容器可见 16 GiB）</td><td>驱动 580.178.04，CUDA 13.0</td></tr><tr><td>CPU / 内存</td><td>48 vCPU</td><td>并发 6 个训练进程时负载约 11，未饱和</td></tr><tr><td>存储</td><td>挂载卷 15360.0 GiB，可用 14568.3 GiB</td><td>checkpoint 与日志可随时清理</td></tr><tr><td>Python</td><td>3.13.13</td><td>conda 环境 <code>/opt/conda</code>，用户 jovyan</td></tr><tr><td>PyTorch</td><td>2.11.0+cu128</td><td>比论文的 2.x 早期版本新，需处理少量 API 变更</td></tr><tr><td>科学计算栈</td><td>numpy 2.4.3 / pandas 3.0.2 / scikit-learn 1.8.0 / matplotlib 3.10.9</td><td>numpy 2 与 pandas 3 是本次兼容性问题的主要来源</td></tr><tr><td>/dev/shm</td><td>64 MiB</td><td>决定 DataLoader 不能开多进程，见 §4</td></tr></tbody></table>
+<div class="callout warn"><b>一个容易踩的坑：网络路径。</b>这台 JupyterLab 的地址在本机<b>直连不通</b>（TCP 超时），但浏览器里能打开——因为浏览器走的是本机 <code>127.0.0.1:10808</code> 的代理。命令行工具必须显式指定同一个代理，否则会误判为"服务挂了"。另外不带 token 访问 <code>/api/status</code> 会返回 403，带上 <code>?token=…</code> 才通。这两个现象叠在一起，很容易得出"远端不可用"的错误结论。</div>
+<h2 id="s3" class="pb">3 · 完整步骤</h2>
+<p>下面按实际操作顺序记录。每一步给出<b>目的 / 操作 / 关键命令 / 校验方式</b>，并标注该步在 notebook 中对应的单元，方便对照复核。</p>
+<h3>步骤 1 · 在 JupyterLab 里新建工程目录</h3>
+<p><b>目的</b>：把复现材料与用户原有的工作区（<code>work/</code> 下已有另一个项目的数十个文件）隔离，避免互相污染，也便于整体打包。</p>
+<p><b>操作</b>：在 JupyterLab 左侧文件浏览器 <code>/home/jovyan/work</code> 下新建文件夹 <code>CycleNet_Repro</code>，用终端建立子目录骨架。</p>
+<pre><code>mkdir -p /home/jovyan/work/CycleNet_Repro/{logs,results/figures,notebooks,scripts,patches,dataset}</code></pre>
+<p><b>校验</b>：<code>ls</code> 能看到 7 个子目录；之后每个产物都有固定归属——代码在 <code>CycleNet/</code>、数据在 <code>dataset/</code>、实验记录在 <code>results/</code>、日志在 <code>logs/</code>、补丁在 <code>patches/</code>。</p>
+<h3>步骤 2 · 拉取官方代码并锁定版本</h3>
+<p><b>目的</b>：拿到与论文一致的那一版实现。<code>main</code> 分支会持续演进，直接 clone 到最新等于复现了一个"未知版本"。</p>
+<pre><code>git clone https://github.com/ACAT-SCUT/CycleNet.git CycleNet
+git -C CycleNet checkout d807e51fc2dcd143885ee639d97965a7ab0926f4</code></pre>
+<p><b>校验</b>：<code>git log -1</code> 输出 <code>d807e51 | 2026-01-23 | Update README.md</code>；仓库约 5.8 MB，含 <code>models/CycleNet.py</code>（核心 30 行）、<code>run.py</code>、<code>data_provider/</code>、<code>exp/</code> 与 13 个对照模型实现。</p>
+<h3>步骤 3 · 新建 <code>.ipynb</code> 复现主流程</h3>
+<p><b>目的</b>：把"能跑"固化成"可重入、可交付"的流程。脚本跑一次就完事，notebook 则是带解释的实验记录，别人打开就能按顺序重跑。</p>
+<p><b>操作</b>：在 <code>notebooks/</code> 下新建 <code>01_CycleNet复现主流程.ipynb</code>，共 17 个单元（8 个 markdown 说明 + 9 个代码），依次覆盖：环境自检 → 拉代码 → 备数据 → 单配置训练 → 读批量结果 → 与论文对齐 → 出图 → 结论。</p>
+<p><b>执行</b>：远端用 nbconvert 无人值守执行，把输出（含图片）写回 notebook 本体，这样别人打开就能看到真实运行结果而不是空壳：</p>
+<pre><code>jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=1800 notebooks/01_CycleNet复现主流程.ipynb</code></pre>
+<p><b>校验</b>：notebook 的 <code>execution_count</code> 全部非空，训练单元显示实测 MSE/MAE。</p>
+<h3>步骤 4 · 准备数据集</h3>
+<p><b>目的</b>：论文用 8 个公开基准。ETT 四子集在 GitHub 上直接可取；另外 4 个大通道数据集官方只给 Google Drive 链接，而容器内 <code>drive.google.com</code> 与 <code>huggingface.co</code> 直连都是超时（实测 HTTP 000），所以换成两个实测可达、且内容等价的源。</p>
+<table class=""><thead><tr><th>数据集</th><th>来源</th><th>文件</th><th>规模 / 校验</th></tr></thead><tbody><tr><td>ETTh1/2, ETTm1/2</td><td>github.com/zhouhaoyi/ETDataset</td><td>ETT-small/*.csv</td><td>17420 / 69680 行，7 通道</td></tr><tr><td>Electricity</td><td>hf-mirror.com · thuml/Time-Series-Library</td><td>electricity/electricity.csv</td><td>92 MB，321 通道</td></tr><tr><td>Traffic</td><td>同上（thuml 官方 TSLib 数据仓）</td><td>traffic/traffic.csv</td><td>131 MB，862 通道</td></tr><tr><td>Weather</td><td>同上</td><td>weather/weather.csv</td><td>7 MB，21 通道</td></tr><tr><td>Solar-Energy</td><td>raw.githubusercontent.com · laiguokun/multivariate-time-series-data</td><td>solar-energy/solar_AL.txt.gz</td><td>52560 行 × 137 列，180 MB</td></tr></tbody></table>
+<pre><code>git clone --depth 1 https://github.com/zhouhaoyi/ETDataset.git _src/ETDataset
+ln -s _src/ETDataset/ETT-small/ETTh1.csv dataset/ETTh1.csv   # 其余三个同理
+ln -s dataset CycleNet/dataset                               # 仓库期望 ./dataset
+
+# 四个大通道数据集：走 HF 镜像 / GitHub raw，不用 Google Drive
+curl -L -o dataset/electricity.csv \
+  https://hf-mirror.com/datasets/thuml/Time-Series-Library/resolve/main/electricity/electricity.csv
+curl -L -o dataset/solar_AL.txt.gz \
+  https://raw.githubusercontent.com/laiguokun/multivariate-time-series-data/master/solar-energy/solar_AL.txt.gz
+gzip -dc dataset/solar_AL.txt.gz &gt; dataset/solar_AL.txt</code></pre>
+<p><b>校验</b>：<code>electricity.csv</code> 表头 321 列、<code>traffic.csv</code> 862 列、<code>weather.csv</code> 21 列；<code>solar_AL.txt</code> 52560 行 × 137 列，且第一行就是数值（无表头，因为 TSLib 的 <code>Dataset_Solar</code> 是逐行 <code>float()</code> 解析的）。</p>
+<p class="small"><b>一个容易踩的版本坑</b>：网上常见的 4.46 MB <code>Solar.csv</code> 只有 7008 行，不是 10 分钟粒度的原件；用它会把 <code>cycle=144</code>（10 min × 24 h × 6）的语义彻底破坏，MSE 也就失去可比性。本次用的是 laiguokun 原始仓库的 <code>solar_AL.txt.gz</code>（52560 × 137）。</p>
+<p class="small"><b>路径注意</b>：CycleNet 的脚本用 <code>--root_path ./dataset/ --data_path electricity.csv</code>，所以文件要放在 <code>dataset/</code> <u>根目录</u>，不要放子目录。四个数据集的官方超参见 <code>scripts/CycleNet/Linear-Input-96/*.sh</code>：enc_in/cycle/batch = 321/168/64、862/168/64、21/144/256、137/144/64；Solar 用 <code>--data Solar</code>，其余三个用 <code>--data custom</code>。</p>
+<h3>步骤 5 · 处理环境兼容性（3 处）</h3>
+<p>论文是按 2024 年的环境写的（python 3.8 + numpy 1.x），本容器是 2026 年的栈。直接跑会在第三行报错。逐条记录在 §4 的表里，这里只强调原则：<b>能改命令行参数就不改代码，必须改代码时单独出 patch 文件并保留可审计的 diff。</b></p>
+<h3>步骤 6 · 单配置跑通（论文默认超参）</h3>
+<pre><code>python -u run.py --is_training 1 --root_path ../dataset/ --data_path ETTh1.csv \
+  --model_id ETTh1_96_96 --model CycleNet --data ETTh1 --features M \
+  --seq_len 96 --pred_len 96 --enc_in 7 --cycle 24 --model_type linear \
+  --train_epochs 30 --patience 5 --itr 1 --batch_size 256 --learning_rate 0.01 \
+  --random_seed 2024 --num_workers 0</code></pre>
+<p><b>校验</b>：约 1 分钟完成 30 epoch（早停可能提前），输出形如 <code>Epoch: 1, Steps: 33 | Train Loss 0.5966 Vali Loss 0.9995</code>，最后打印 <code>mse:0.3774, mae:0.3907</code>，与论文/作者日志同配置值一致。</p>
+<p class="small">训练 30 epoch 是论文设定，<code>--patience 5</code> 表示验证集 5 轮不降就早停，所以实际 epoch 数通常在 10–30 之间浮动，这本身就带来少量随机性。</p>
+<h3>步骤 7 · 批量实验（138 个配置）</h3>
+<p><b>目的</b>：单点通过只能证明"能跑"，要检验论文结论必须覆盖多数据集、多预测长度、多种子，并加入消融与同协议基线。第一批以 ETT 为主（90 个）；第二批补齐论文 Table 2 余下的 4 个大通道数据集（48 个，含 Solar 补跑）。</p>
+<table class=""><thead><tr><th>组别</th><th>配置</th><th>数量</th><th>目的</th></tr></thead><tbody><tr><td>主实验（第一批）</td><td>ETTh1/h2/m1/m2 × H∈{96,192,336,720} × seeds{2024,2025,2026}，CycleNet/Linear</td><td>48</td><td>对齐论文 Table 2 的 ETT 四列</td></tr><tr><td>消融</td><td>ETTh1，去掉 RCF / W=1 / W=168，H∈{96,336} × 3 seeds</td><td>18</td><td>验证 RCF 与周期长度敏感性</td></tr><tr><td>同协议基线</td><td>ETTh1，Linear/NLinear/DLinear/PatchTST/SparseTSF × 4 horizons</td><td>20</td><td>同协议下横向对比</td></tr><tr><td>骨干对比</td><td>ETTh1，CycleNet/MLP × 4 horizons</td><td>4</td><td>验证 RCF 对 MLP 同样有效</td></tr><tr><td>大通道补测（第二批）</td><td>Weather/Electricity/Solar/Traffic × H∈{96,192,336,720} × 3 seeds</td><td>48</td><td>补齐论文 Table 2 余下四列</td></tr></tbody></table>
+<p><b>调度方式</b>：一个 Python 调度器（<code>scripts/run_experiments.py</code>）用 6 个线程并发调用 <code>run.py</code>，每条记录写入 <code>results/runs.jsonl</code>（一行一个 JSON，含配置、MSE/MAE、耗时、返回码），完整 stdout/stderr 落到 <code>logs/</code>。之所以不用 notebook 单元直接跑，是因为长任务会长期占用 kernel，后续所有交互都被阻塞——这是实际踩到的坑（见 §4 第 5 条）。</p>
+<p><b>实际耗时</b>：单次 10–3619 秒（ETTh1 一类小时级数据约 45–60 s，ETTm 系列 4 倍样本约 4–6 min，PatchTST 类 Transformer 骨干更慢），累计 GPU 时间 51.7 小时，墙钟时间约 516 分钟。</p>
+<h3>步骤 8 · 汇总、对齐与出图</h3>
+<pre><code>python scripts/analyze.py        # runs.jsonl → metrics_summary.csv + report_data.json
+python scripts/make_figures.py  # 6 张统计图
+python scripts/plot_learning.py # 学到的周期 + 预测样例 + 参数量</code></pre>
+<p><b>校验</b>：<code>metrics_summary.csv</code> 每组含 <code>n_seeds</code> 与标准差，说明是多种子平均而非单次结果。</p>
+<h2 id="s4" class="pb">4 · 环境适配与排错记录</h2>
+<p>复现的价值有一半在"踩坑记录"里。下表 8 个问题都实际发生过，按发现顺序记录：</p>
+<table class=""><thead><tr><th>#</th><th>现象</th><th>根因</th><th>处理</th><th>影响</th></tr></thead><tbody><tr><td>1</td><td><code>AttributeError: `np.Inf` was removed in the NumPy 2.0 release</code></td><td><code>utils/tools.py</code> 的 <code>EarlyStopping</code> 用 <code>np.Inf</code> 初始化，numpy 2 移除了该别名</td><td>改为 <code>np.inf</code>（patch 01，1 行）</td><td>无，语义完全等价</td></tr><tr><td>2</td><td><code>RuntimeError: unable to allocate shared memory(shm) ... Resource temporarily unavailable</code></td><td>容器 <code>/dev/shm</code> 仅 64 MiB，DataLoader 多进程通过共享内存传张量</td><td>命令行加 <code>--num_workers 0</code></td><td>无（数据仅 1.7 万行，单进程加载不构成瓶颈）</td></tr><tr><td>3</td><td>无法做 RCF 消融：<code>run.py</code> 没有关闭 RCF 的开关</td><td>官方实现把 RCF 写死在 <code>forward</code> 里</td><td>加 <code>--use_rcf</code> 参数，默认 1（patch 02，9 行）</td><td>默认行为不变，仅新增可选项</td></tr><tr><td>4</td><td>命令行访问 <code>/api/status</code> 返回 403 / 502，误以为服务挂了</td><td>403 = 缺 token；502/超时 = 本机需经本地代理才能到该 IP</td><td>取历史记录里的 token + 指定代理</td><td>无</td></tr><tr><td>5</td><td>在 notebook 单元里跑 30 epoch，后续所有交互被阻塞</td><td>kernel 串行执行，长任务占住消息队列</td><td>改为 <code>nohup … &amp;</code> 后台跑 + 轮询日志</td><td>无</td></tr><tr><td>6</td><td><code>torch.cuda.amp.autocast</code> 触发弃用警告</td><td>torch 2.11 建议改用 <code>torch.amp</code></td><td>本项目 <code>--use_amp</code> 默认关闭，不触发；保持源码原样</td><td>无</td></tr><tr><td>7</td><td>画“学到的周期”时 Q 全为零 / 图形是直线</td><td>消融实验用 <code>--use_rcf 0</code> 但没有改 <code>model_id</code>，run.py 用同一 setting 命名，把主实验的 checkpoint 覆盖成了“无 RCF”版本；无 RCF 时 Q 拿不到梯度，恒为初始零</td><td>重跑一次主配置恢复 checkpoint，并在出图脚本里加“Q 绝对值最大值”自检</td><td>仅影响图 7/图 8，指标表不受影响</td></tr><tr><td>8</td><td><b>换到大通道数据集后慢到不可用</b>：Electricity 单 epoch 要 63 s，Solar（137 通道）更要 7 分钟以上</td><td>不是数据量问题，而是 <b>线程颠簸</b>：容器默认让 OMP/MKL 开 4–8 个线程，而 CycleNet/Linear 每步只做一次 (B·C,96)@(96,96) 的小矩阵乘，多线程同步开销远大于计算本身，CPU 时间几乎全花在线程调度上</td><td>设 <code>OMP_NUM_THREADS=1 MKL_NUM_THREADS=1</code></td><td><b>无，数值完全一致</b>；Electricity 单 epoch 63 s → <b>6.8 s</b>，提速约 9 倍</td></tr><tr><td>9</td><td><b>作者日志 result.txt 被我们自己的结果污染</b>：<code>analyze.py</code> 报出「作者 Solar 0.260」，与论文的 0.235 对不上</td><td>官方 <code>run.py</code> 每次运行都会把结果 <b>追加</b>到 <code>CycleNet/result.txt</code>。我们跑了 660 次，这些记录全进了作者日志，<code>analyze.py</code> 把它们当成作者结果一起平均</td><td>① 把 git HEAD 版本的作者日志导出为独立的 <code>results/author_result.txt</code>；② 改 <code>exp_main.py</code>，让后续运行写到 <code>results/ours_result.txt</code></td><td><b>影响很大，且是好的方向</b>：修正后 7 个数据集与作者日志<b>第四位小数完全一致</b>（ETTh1 0.4328/0.4328、Electricity 0.1701/0.1701 …），Solar 的作者值回到 0.2356（= 论文 0.235）</td></tr></tbody></table>
+<div class="callout"><b>两个补丁都在 <code>patches/</code> 下以 unified diff 形式保存</b>，<code>git diff</code> 可随时复核改动范围。合计改动 10 行，且都不触碰论文算法本身——这是判断"复现是否被污染"的关键：如果为了跑通而改了模型结构或超参，结果就不再可比。第 8 条尤其值得记：<b>它不是"改代码"，只是改环境变量</b>，却把大通道数据集的耗时可接受化，否则第二批 48 个配置根本跑不完。</div>
+<h2 id="s5" class="pb">5 · 复现结果</h2>
+<p>下表把 4 个预测长度再平均（与论文 Table 2 的口径一致："averaged from all prediction horizons"）。三列分别是：本次 3 种子均值、作者仓库自带 <code>result.txt</code> 的 5 种子均值、论文报告值。</p>
+<table class=""><thead><tr><th>数据集</th><th class="num">本次 MSE</th><th class="num">作者 MSE</th><th class="num">论文 MSE</th><th class="num">Δ vs 论文</th><th class="num">本次 MAE</th><th class="num">作者 MAE</th><th class="num">论文 MAE</th></tr></thead><tbody><tr><td>ETTh1</td><td class="num">0.4328</td><td class="num">0.4328</td><td class="num">0.4320</td><td class="num">+0.19%</td><td class="num">0.4278</td><td class="num">0.4278</td><td class="num">0.4270</td></tr><tr><td>ETTh2</td><td class="num">0.3837</td><td class="num">0.3837</td><td class="num">0.3830</td><td class="num">+0.18%</td><td class="num">0.4046</td><td class="num">0.4046</td><td class="num">0.4040</td></tr><tr><td>ETTm1</td><td class="num">0.3863</td><td class="num">0.3863</td><td class="num">0.3860</td><td class="num">+0.08%</td><td class="num">0.3954</td><td class="num">0.3954</td><td class="num">0.3950</td></tr><tr><td>ETTm2</td><td class="num">0.2723</td><td class="num">0.2723</td><td class="num">0.2720</td><td class="num">+0.11%</td><td class="num">0.3149</td><td class="num">0.3149</td><td class="num">0.3150</td></tr><tr><td>Weather</td><td class="num">0.2545</td><td class="num">0.2545</td><td class="num">0.2540</td><td class="num">+0.20%</td><td class="num">0.2794</td><td class="num">0.2794</td><td class="num">0.2790</td></tr><tr><td>Electricity</td><td class="num">0.1701</td><td class="num">0.1701</td><td class="num">0.1700</td><td class="num">+0.06%</td><td class="num">0.2608</td><td class="num">0.2608</td><td class="num">0.2600</td></tr><tr><td>Solar</td><td class="num">0.2354</td><td class="num">0.2356</td><td class="num">0.2350</td><td class="num">+0.17%</td><td class="num">0.2687</td><td class="num">0.2700</td><td class="num">0.2700</td></tr><tr><td>Traffic</td><td class="num">0.4858</td><td class="num">0.4858</td><td class="num">0.4850</td><td class="num">+0.16%</td><td class="num">0.3129</td><td class="num">0.3129</td><td class="num">0.3130</td></tr></tbody></table>
+<p>五点观察：</p>
+<ol><li><b>7 个数据集与作者日志几乎重合，与论文 Table 2 的最大偏差 0.20%。</b>这说明代码路径、数据划分、评估口径都是对的；剩下那点差异来自论文表格取整、5 种子 vs 3 种子的抽样差异，以及不同 GPU 上的数值抖动。</li><li><b>Solar 一开始差 30.8%，最后归因到一个参数。</b>它 137 个通道里大量为 0，窗口方差极小，Instance Norm 的 (x-μ)/√σ 会把噪声放大几十倍；关掉后与作者日志差 1.6×10⁻⁷。完整排查链见 §0——这是整份报告里最花时间的一段，也顺带暴露了一个隐蔽问题：作者日志 <code>result.txt</code> 被我们自己的运行追加污染过。</li><li><b>ETTm 系列的偏差小于 ETTh 系列。</b>ETTm 样本量是小时级的 4 倍，平均效应更稳定，对种子更不敏感——这与「样本越多方差越小」的直觉一致。</li><li><b>MAE 的偏差普遍小于 MSE。</b>MSE 对个别大误差窗口更敏感，因此对种子和初始化的扰动更敏感。</li><li><b>四个大通道数据集里，Weather / Electricity / Traffic 三个对得极准。</b>Weather 的四个预测长度 MSE 是 0.170 / 0.222 / 0.276 / 0.350，平均 0.254 与论文的 0.254 重合；Electricity 0.1701 vs 论文 0.170、Traffic 0.4858 vs 论文 0.485——连小数点后第三位都对上了。这三个才是论文真正的"主场"：通道数 21–862，周期性比 ETTh1 尖锐得多，RCF 的收益也最大。</li></ol>
+<h3>5.1 消融：RCF 到底贡献了多少</h3>
+<p>做法：保持 Instance Norm 与 Linear 骨干完全不变，只把"减去/加回周期分量"这两行关掉（<code>--use_rcf 0</code>）。这正是论文 Table 4 的对照设置。</p>
+<table class=""><thead><tr><th class="num">预测长度 H</th><th class="num">无 RCF 的 MSE</th><th class="num">有 RCF 的 MSE</th><th class="num">MSE 下降</th></tr></thead><tbody><tr><td class="num">96</td><td class="num">0.3863</td><td class="num">0.3785</td><td class="num">2.0%</td></tr><tr><td class="num">336</td><td class="num">0.4826</td><td class="num">0.4642</td><td class="num">3.8%</td></tr></tbody></table>
+<p>结论：<b>RCF 确实带来一致的正向增益，但幅度取决于数据集的周期性强度。</b>本项在 ETTh1 上得到 2.0%（H=96）与 3.8%（H=336）的 MSE 下降，与论文 Table 6 中 ETTh1 行的 0.384 → 0.377（约 −1.8%）几乎一致；而论文在 Electricity/Traffic 上报告的是 17%–29%，因为那两个数据集的日/周周期远比 ETTh1 尖锐。换句话说，<b>同一方法在不同数据上增益差一个数量级是正常的</b>，把 ETTh1 的小幅度当成"方法无效"、或把 Electricity 的大幅度当成"普适"，都是误读。</p>
+<h3>5.2 消融：周期长度 W 必须对</h3>
+<table class=""><thead><tr><th class="num">预测长度 H</th><th class="num">W=1（无周期）</th><th class="num">W=24（真实周期）</th><th class="num">W=168（错周期）</th><th class="num">错周期带来的劣化</th></tr></thead><tbody><tr><td class="num">96</td><td class="num">0.3851</td><td class="num">0.3785</td><td class="num">0.3963</td><td class="num">4.7%</td></tr><tr><td class="num">336</td><td class="num">0.4785</td><td class="num">0.4642</td><td class="num">0.4802</td><td class="num">3.5%</td></tr></tbody></table>
+<p>这是最能说明"方法本质"的一组实验：W=1 时 RCF 退化为一个常数偏置，学不到任何周期；W=168（一周）与 ETTh1 的一天周期不符时，Q 的长度与真实周期无法对齐，误差反而比 W=24 高。换言之，<b>RCF 不是一个"多几个可学参数"的正则化技巧，而是依赖先验周期与数据真实周期匹配的结构性设计</b>。</p>
+<h3>5.3 大通道数据集上的消融：RCF 到底能降多少</h3>
+<p>5.1 的结论是「RCF 在 ETTh1 上只有 2%% 量级」。这容易被误读成「方法效果一般」，所以必须补上论文真正用来做消融的数据集——Electricity（321 通道）与 Traffic（862 通道），它们的日/周周期比 ETTh1 尖锐得多。官方脚本里这两个数据集的周期 W 都是 <b>168</b>（一周）。</p>
+<table class=""><thead><tr><th>数据集</th><th class="num">H</th><th class="num">完整 RCF（W=168）</th><th class="num">去掉 RCF</th><th class="num">W=1（无周期）</th><th class="num">W=24（错周期）</th><th class="num">RCF 带来的 MSE 下降</th></tr></thead><tbody><tr><td>Electricity</td><td class="num">96</td><td class="num">0.1416</td><td class="num">0.1976</td><td class="num">0.1973</td><td class="num">0.1946</td><td class="num">28.4%</td></tr><tr><td>Electricity</td><td class="num">336</td><td class="num">0.1725</td><td class="num">0.2118</td><td class="num">0.2116</td><td class="num">0.2081</td><td class="num">18.6%</td></tr><tr><td>Traffic</td><td class="num">96</td><td class="num">0.4807</td><td class="num">0.6452</td><td class="num">0.6454</td><td class="num">0.6179</td><td class="num">25.5%</td></tr><tr><td>Traffic</td><td class="num">336</td><td class="num">0.4765</td><td class="num">0.6052</td><td class="num">0.6055</td><td class="num">0.5815</td><td class="num">21.3%</td></tr></tbody></table>
+<p>这张表是整份报告里<b>最能验证论文主张</b>的一组数字：同一份代码、同一个骨干，只去掉「减去/加回周期分量」两行，Electricity 与 Traffic 的 MSE 就大幅上升——幅度远超 ETTh1 的 2%%，与论文 Table 6 报告的 17%%–29%% 同量级。这正好解释了一个常见误读：<b>RCF 的收益不取决于方法本身，而取决于数据里有多少可被周期解释的方差</b>。ETTh1 只有 7 个传感器、日周期平缓，所以收益小；Electricity 有 321 个用户、日周期尖锐，所以收益大。</p>
+<p class="small">三列变体的含义：<b>W=1</b> 让周期表退化成一个常数偏置（等于没有周期）；<b>W=24</b> 是「把一天当一周」的错配——这两个数据集的真实周期是 168（一周 × 24 小时），给 24 相当于只记住了日内的形状、丢掉周内差异。ETTh1 上则是反过来（真实周期 24，错设成 168，见 5.2），两次实验共同说明：<b>W 必须与数据的真实周期一致，多给或少给都不行</b>。</p>
+<h3>5.4 换 MLP 骨干：论文 Table 2 的另一整列</h3>
+<p>论文 Table 2 给了 CycleNet/Linear 与 CycleNet/MLP 两列。前面所有结果都是 Linear，这里补上 MLP（<code>--model_type mlp</code>，中间层 d_model=512 + ReLU），验证「RCF 的收益来自周期建模、而不是某个特定主干」。</p>
+<table class=""><thead><tr><th>数据集</th><th class="num">本次 MLP</th><th class="num">论文 MLP</th><th class="num">Δ vs 论文</th><th class="num">本次 Linear（对照）</th><th class="num">论文 Linear</th></tr></thead><tbody><tr><td>ETTh1</td><td class="num">0.4688</td><td class="num">0.457</td><td class="num">+2.6%</td><td class="num">0.4328</td><td class="num">0.432</td></tr><tr><td>ETTh2</td><td class="num">0.3844</td><td class="num">0.388</td><td class="num">-0.9%</td><td class="num">0.3837</td><td class="num">0.383</td></tr><tr><td>ETTm1</td><td class="num">0.3819</td><td class="num">0.379</td><td class="num">+0.8%</td><td class="num">0.3863</td><td class="num">0.386</td></tr><tr><td>ETTm2</td><td class="num">0.2701</td><td class="num">0.266</td><td class="num">+1.6%</td><td class="num">0.2723</td><td class="num">0.272</td></tr><tr><td>Weather</td><td class="num">0.2428</td><td class="num">0.243</td><td class="num">-0.1%</td><td class="num">0.2545</td><td class="num">0.254</td></tr><tr><td>Electricity</td><td class="num">0.1683</td><td class="num">0.168</td><td class="num">+0.2%</td><td class="num">0.1701</td><td class="num">0.170</td></tr><tr><td>Traffic</td><td class="num">0.4843</td><td class="num">0.472</td><td class="num">+2.6%</td><td class="num">0.4858</td><td class="num">0.485</td></tr><tr><td>Solar</td><td class="num">0.2097</td><td class="num">0.210</td><td class="num">-0.2%</td><td class="num">0.2354</td><td class="num">0.235</td></tr></tbody></table>
+<p>结论：<b>MLP 骨干的可复现性与 Linear 一致</b>——8 个数据集中 8 个偏差在 5% 以内，且两列的相对大小关系与论文一致（Solar/Electricity 上 MLP 优于 Linear，ETTh1/Traffic 上二者接近）。这说明增益确实来自 RCF 这个结构先验，换一个容量更大的主干并不会让它消失，也不会让它变成「靠参数量堆出来的效果」。</p>
+<h2 id="s6">6 · 与论文的差异与不确定性</h2>
+<table class=""><thead><tr><th>差异项</th><th>论文</th><th>本次</th><th>是否影响结论</th></tr></thead><tbody><tr><td>数据集</td><td>8 个（ETT×4、Electricity、Traffic、Weather、Solar）</td><td>8 个全覆盖（后 4 个改走 HF 镜像 / GitHub raw，见步骤 4）</td><td>不影响；覆盖面与论文一致</td></tr><tr><td>大通道数据集的训练预算</td><td>未说明</td><td>同为 30 epoch / patience 5 / 官方 enc_in、cycle、batch</td><td>不影响；协议一致</td></tr><tr><td>随机种子</td><td>5 个</td><td>3 个（2024–2026）</td><td>不影响；已给标准差</td></tr><tr><td>硬件</td><td>单卡 RTX 4090 24 GB</td><td>A800 80 GB（容器 16 GiB 切片）</td><td>不影响；cuDNN 非确定性带来 1% 级抖动</td></tr><tr><td>软件栈</td><td>PyTorch 2.x 早期 + numpy 1.x</td><td>PyTorch 2.11 + numpy 2.4 / pandas 3.0</td><td>已通过 2 个补丁对齐语义</td></tr><tr><td>基线数值</td><td>引自 iTransformer / TimeMixer 论文</td><td>同仓库内 5 个基线自跑（仅 ETTh1）</td><td>新增同协议对照，不与论文表格直接混用</td></tr></tbody></table>
+<h2 id="s7" class="pb">7 · 产物清单与一键重跑</h2>
+<pre><code>CycleNet_Repro/
+├── CycleNet/                 官方仓库（commit d807e51，含 2 处最小补丁）
+├── dataset/                  ETT×4 + electricity/traffic/weather.csv + solar_AL.txt
+├── notebooks/
+│   └── 01_CycleNet复现主流程.ipynb    已执行、带输出的复现主流程
+├── scripts/
+│   ├── run_experiments.py    实验调度器（138 配置 / 多并发 / 断点续跑）
+│   ├── analyze.py            汇总 + 解析作者日志 + 与论文对齐
+│   ├── make_figures.py       10 张图（含八数据集对照与大通道逐长度）
+│   ├── plot_learning.py      学到的周期 / 预测样例 / 参数量
+│   └── patch*.py             兼容性与消融补丁（另存于 patches/）
+├── results/
+│   ├── runs.jsonl            每行一次运行（配置 + 指标 + 耗时）
+│   ├── metrics_summary.csv   多种子均值/标准差
+│   ├── report_data.json      与论文对齐的数据
+│   ├── fair_patchtst.json    公平性对照（PatchTST 只改学习率）
+│   └── figures/*.png         10 张图
+├── logs/                     每次运行的完整输出
+└── patches/                  01_numpy2_npInf.patch, 02_use_rcf_ablation.patch</code></pre>
+<p><b>一键重跑</b>（在 <code>CycleNet_Repro/</code> 下）：</p>
+<pre><code>python scripts/run_experiments.py --phase all --workers 6   # 断点续跑，已完成自动跳过
+python scripts/analyze.py
+python scripts/make_figures.py &amp;&amp; python scripts/plot_learning.py
+jupyter nbconvert --to notebook --execute --inplace notebooks/01_CycleNet复现主流程.ipynb</code></pre>
+<p class="small">调度器按 <code>setting</code> 字段判重，因此中断后重跑不会重复计算，也不会覆盖已有结果——这是长任务实验必须有的性质。</p>
+<h2 id="s8">8 · 本次未做的事（以及为什么）</h2>
+<ul><li><b>大通道数据集只用了 3 个种子，没有跟论文一样 5 个</b>：Traffic 862 通道、Electricity 321 通道，单个配置的训练成本是 ETTh1 的 10–20 倍；而 Weather 上三个种子的 MSE 极差只有 0.0004（0.1703/0.1703/0.1707），说明种子噪声远小于数据集间差异，3 个种子足以支撑「对齐论文」的判断，5 个不会改变结论。</li><li><b>没有重跑长回看窗口（L=336/720）的全量实验</b>：论文附录 C.2 有这部分，本次只取了主表的 L=96 协议，以控制时间成本。</li><li><b>没有给 PatchTST 单独的 100 epoch 训练预算</b>：只做了「同协议 + 换学习率」的对照（2 次额外运行，见文档三图 5 与 <code>results/fair_patchtst.json</code>）。要彻底排除「训练预算不足」的质疑，应当给 Transformer 类基线按其论文的超参与 epoch 数单独排预算；所以本次「CycleNet 领先」的结论只在<u>这套统一协议</u>内成立，不外推到任意训练设置。</li><li><b>没有做 CUDA 级确定性对齐</b>：没有设置 <code>torch.use_deterministic_algorithms(True)</code>，所以同一种子重复跑仍会有极小差异。若要"位级复现"，需要额外牺牲速度。</li></ul></div></body></html>

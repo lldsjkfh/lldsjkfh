@@ -1,0 +1,778 @@
+{
+ "ETTh1": {
+  "per_horizon": [
+   {
+    "dataset": "ETTh1",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 24,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 96,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.378487,
+    "mse_std": 0.000671,
+    "mae_mean": 0.391473,
+    "mae_std": 0.000548,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTh1",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 24,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 192,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.426641,
+    "mse_std": 0.001124,
+    "mae_mean": 0.419495,
+    "mae_std": 0.000824,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTh1",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 24,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 336,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.464151,
+    "mse_std": 0.001313,
+    "mae_mean": 0.439284,
+    "mae_std": 0.000782,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTh1",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 24,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 720,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.461901,
+    "mse_std": 0.000704,
+    "mae_mean": 0.460883,
+    "mae_std": 0.000903,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   }
+  ],
+  "avg_mse": 0.4328,
+  "avg_mae": 0.4278,
+  "paper_mse": 0.432,
+  "paper_mae": 0.427,
+  "author_avg_mse": 0.4328,
+  "author_avg_mae": 0.4278
+ },
+ "ETTh2": {
+  "per_horizon": [
+   {
+    "dataset": "ETTh2",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 24,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 96,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.285857,
+    "mse_std": 0.001064,
+    "mae_mean": 0.33529,
+    "mae_std": 0.00059,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTh2",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 24,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 192,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.373027,
+    "mse_std": 0.001169,
+    "mae_mean": 0.391747,
+    "mae_std": 0.001348,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTh2",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 24,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 336,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.421778,
+    "mse_std": 0.001586,
+    "mae_mean": 0.433225,
+    "mae_std": 0.000382,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTh2",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 24,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 720,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.453994,
+    "mse_std": 0.003715,
+    "mae_mean": 0.45831,
+    "mae_std": 0.002048,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   }
+  ],
+  "avg_mse": 0.3837,
+  "avg_mae": 0.4046,
+  "paper_mse": 0.383,
+  "paper_mae": 0.404,
+  "author_avg_mse": 0.3837,
+  "author_avg_mae": 0.4046
+ },
+ "ETTm1": {
+  "per_horizon": [
+   {
+    "dataset": "ETTm1",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 96,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 96,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.325505,
+    "mse_std": 0.000545,
+    "mae_mean": 0.363684,
+    "mae_std": 0.000373,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTm1",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 96,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 192,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.366332,
+    "mse_std": 0.000588,
+    "mae_mean": 0.38243,
+    "mae_std": 0.000493,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTm1",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 96,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 336,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.396225,
+    "mse_std": 0.000458,
+    "mae_mean": 0.401652,
+    "mae_std": 0.000481,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTm1",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 96,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 720,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.457139,
+    "mse_std": 0.000749,
+    "mae_mean": 0.433929,
+    "mae_std": 0.000668,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   }
+  ],
+  "avg_mse": 0.3863,
+  "avg_mae": 0.3954,
+  "paper_mse": 0.386,
+  "paper_mae": 0.395,
+  "author_avg_mse": 0.3863,
+  "author_avg_mae": 0.3954
+ },
+ "ETTm2": {
+  "per_horizon": [
+   {
+    "dataset": "ETTm2",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 96,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 96,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.166976,
+    "mse_std": 0.000734,
+    "mae_mean": 0.248269,
+    "mae_std": 0.000818,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTm2",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 96,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 192,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.233049,
+    "mse_std": 0.000652,
+    "mae_mean": 0.291097,
+    "mae_std": 0.000595,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTm2",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 96,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 336,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.293685,
+    "mse_std": 0.00051,
+    "mae_mean": 0.330357,
+    "mae_std": 0.000189,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "ETTm2",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 96,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 720,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.395506,
+    "mse_std": 0.001487,
+    "mae_mean": 0.389786,
+    "mae_std": 0.000988,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   }
+  ],
+  "avg_mse": 0.2723,
+  "avg_mae": 0.3149,
+  "paper_mse": 0.272,
+  "paper_mae": 0.315,
+  "author_avg_mse": 0.2723,
+  "author_avg_mae": 0.3149
+ },
+ "Electricity": {
+  "per_horizon": [
+   {
+    "dataset": "Electricity",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 168,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 96,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.141561,
+    "mse_std": 0.000222,
+    "mae_mean": 0.234654,
+    "mae_std": 0.000404,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Electricity",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 168,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 192,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.155503,
+    "mse_std": 2.4e-05,
+    "mae_mean": 0.247132,
+    "mae_std": 9.5e-05,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Electricity",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 168,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 336,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.172516,
+    "mse_std": 7.2e-05,
+    "mae_mean": 0.264689,
+    "mae_std": 0.000113,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Electricity",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 168,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 720,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.210667,
+    "mse_std": 3.9e-05,
+    "mae_mean": 0.296899,
+    "mae_std": 4.6e-05,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   }
+  ],
+  "avg_mse": 0.1701,
+  "avg_mae": 0.2608,
+  "paper_mse": 0.17,
+  "paper_mae": 0.26,
+  "author_avg_mse": 0.1701,
+  "author_avg_mae": 0.2608
+ },
+ "Solar": {
+  "per_horizon": [
+   {
+    "dataset": "Solar",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 144,
+    "use_rcf": 1,
+    "use_revin": 0,
+    "pred_len": 96,
+    "seq_len": 96,
+    "n_seeds": 3,
+    "mse_mean": 0.208881,
+    "mse_std": 0.001252,
+    "mae_mean": 0.258524,
+    "mae_std": 0.002537,
+    "seeds": [
+     2024,
+     2025,
+     2026
+    ]
+   },
+   {
+    "dataset": "Solar",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 144,
+    "use_rcf": 1,
+    "use_revin": 0,
+    "pred_len": 192,
+    "seq_len": 96,
+    "n_seeds": 3,
+    "mse_mean": 0.232524,
+    "mse_std": 0.001864,
+    "mae_mean": 0.270802,
+    "mae_std": 0.001328,
+    "seeds": [
+     2024,
+     2025,
+     2026
+    ]
+   },
+   {
+    "dataset": "Solar",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 144,
+    "use_rcf": 1,
+    "use_revin": 0,
+    "pred_len": 336,
+    "seq_len": 96,
+    "n_seeds": 3,
+    "mse_mean": 0.24484,
+    "mse_std": 0.001639,
+    "mae_mean": 0.272833,
+    "mae_std": 0.002713,
+    "seeds": [
+     2024,
+     2025,
+     2026
+    ]
+   },
+   {
+    "dataset": "Solar",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 144,
+    "use_rcf": 1,
+    "use_revin": 0,
+    "pred_len": 720,
+    "seq_len": 96,
+    "n_seeds": 3,
+    "mse_mean": 0.255332,
+    "mse_std": 0.002007,
+    "mae_mean": 0.272525,
+    "mae_std": 0.001572,
+    "seeds": [
+     2024,
+     2025,
+     2026
+    ]
+   }
+  ],
+  "avg_mse": 0.2354,
+  "avg_mae": 0.2687,
+  "paper_mse": 0.235,
+  "paper_mae": 0.27,
+  "author_avg_mse": 0.2356,
+  "author_avg_mae": 0.27
+ },
+ "Traffic": {
+  "per_horizon": [
+   {
+    "dataset": "Traffic",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 168,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 96,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.480676,
+    "mse_std": 0.000276,
+    "mae_mean": 0.314076,
+    "mae_std": 0.000436,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Traffic",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 168,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 192,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.482557,
+    "mse_std": 0.000342,
+    "mae_mean": 0.313742,
+    "mae_std": 0.000622,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Traffic",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 168,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 336,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.476481,
+    "mse_std": 0.00033,
+    "mae_mean": 0.303543,
+    "mae_std": 0.000153,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Traffic",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 168,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 720,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.503361,
+    "mse_std": 0.000967,
+    "mae_mean": 0.32035,
+    "mae_std": 0.000679,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   }
+  ],
+  "avg_mse": 0.4858,
+  "avg_mae": 0.3129,
+  "paper_mse": 0.485,
+  "paper_mae": 0.313,
+  "author_avg_mse": 0.4858,
+  "author_avg_mae": 0.3129
+ },
+ "Weather": {
+  "per_horizon": [
+   {
+    "dataset": "Weather",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 144,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 96,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.17039,
+    "mse_std": 0.000296,
+    "mae_mean": 0.216331,
+    "mae_std": 0.000272,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Weather",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 144,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 192,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.222206,
+    "mse_std": 0.000188,
+    "mae_mean": 0.259325,
+    "mae_std": 0.000251,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Weather",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 144,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 336,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.275842,
+    "mse_std": 0.000396,
+    "mae_mean": 0.29685,
+    "mae_std": 0.000309,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   },
+   {
+    "dataset": "Weather",
+    "model": "CycleNet",
+    "model_type": "linear",
+    "cycle": 144,
+    "use_rcf": 1,
+    "use_revin": 1,
+    "pred_len": 720,
+    "seq_len": 96,
+    "n_seeds": 5,
+    "mse_mean": 0.349739,
+    "mse_std": 0.000296,
+    "mae_mean": 0.345145,
+    "mae_std": 0.000325,
+    "seeds": [
+     2024,
+     2025,
+     2026,
+     2027,
+     2028
+    ]
+   }
+  ],
+  "avg_mse": 0.2545,
+  "avg_mae": 0.2794,
+  "paper_mse": 0.254,
+  "paper_mae": 0.279,
+  "author_avg_mse": 0.2545,
+  "author_avg_mae": 0.2794
+ }
+}
