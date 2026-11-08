@@ -1,6 +1,6 @@
 # 学习笔记
 
-算法刷题与论文精读的整理资料。
+算法刷题、论文精读，以及 Linux / 深度学习方向的学习笔记。
 
 ## 目录
 
@@ -10,5 +10,10 @@
 - [论文精读](./论文精读/) — 论文精读笔记，按论文一篇一个文件整理
   - [LLMs Get Lost In Multi-Turn Conversation（ICLR 2026）](./论文精读/LLMs-Get-Lost-in-Multi-Turn-Conversation_ICLR2026.md) — 多轮对话为何让模型掉 39 分：分片模拟实验、能力/可靠性解耦、四类失效模式与机制链
   - [CycleNet（NeurIPS 2024）](./论文精读/CycleNet-NeurIPS2024/README.md) — 用显式周期建模做长时序预测，**含完整精度复现**：8 数据集 × 4 预测长度 8/8 对齐论文（最大偏差 0.20%），13 组消融与图表
+  - [Sherman（SIGMOD 2022）](./论文精读/Sherman-SIGMOD2022/README.md) — 内存解耦架构下的写优化 B+ 树索引：命令合并、网卡片上锁、无序叶子 + 两级版本，倾斜写吞吐 24.7×
+- [Linux](./Linux/) — 系统编程笔记（IPC、线程、进程控制）
+  - [IPC 与线程](./Linux/IPC与线程.md) — 共享内存四步（shm_open → ftruncate → mmap → munmap）、消息队列的边界与优先级、pthread 的创建与三种终止方式
+- [深度学习](./深度学习/) — 从张量开始的实操笔记
+  - [PyTorch 张量基础](./深度学习/PyTorch张量基础.md) — 创建 / 运算 / 索引三件事，广播规则、维度消长与四个高频坑
 
 > 提示：`.html` 文件在 GitHub 上不会直接渲染，可下载后用浏览器打开，或开启 GitHub Pages 在线访问。
