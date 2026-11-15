@@ -14,6 +14,7 @@
 - [Linux](./Linux/) — 系统编程笔记（IPC、线程、进程控制）
   - [IPC 与线程](./Linux/IPC与线程.md) — 共享内存四步（shm_open → ftruncate → mmap → munmap）、消息队列的边界与优先级、pthread 的创建与三种终止方式
   - [线程同步与线程池](./Linux/线程同步与线程池.md) — 信号量 vs 条件变量、有名/无名信号量的区别、线程池的四件套与关闭策略（immediate / wait 四种组合）
+  - [threadpool.c](./Linux/threadpool.c) — 单文件手写线程池（约 380 行），语义对齐 GLib `g_thread_pool_free`，`make` 可编译，自带四种关闭组合的 demo
 - [深度学习](./深度学习/) — 从张量开始的实操笔记
   - [深度学习课程笔记](./深度学习/深度学习课程笔记.html) — 8 章完整课程笔记：张量入门、自动微分、线性回归、参数初始化与损失函数、优化器与正则化、ANN 与 CNN、RNN 文本生成（图片已内嵌，单文件可直接打开）
   - [PyTorch 张量基础](./深度学习/PyTorch张量基础.md) — 创建 / 运算 / 索引三件事，广播规则、维度消长与四个高频坑
