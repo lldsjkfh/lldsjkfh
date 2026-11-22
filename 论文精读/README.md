@@ -20,3 +20,4 @@
 | 01 | LLMs Get Lost In Multi-Turn Conversation | LLM 评测 / 多轮可靠性 | ICLR 2026 | [笔记](./LLMs-Get-Lost-in-Multi-Turn-Conversation_ICLR2026.md) |
 | 02 | CycleNet: Enhancing Time Series Forecasting through Modeling Periodic Patterns | 时间序列 / 长程预测 | NeurIPS 2024 | [精读 + 完整复现](./CycleNet-NeurIPS2024/README.md) |
 | 03 | Sherman: A Write-Optimized Distributed B+Tree Index on Disaggregated Memory | 数据库索引 / 内存解耦 / RDMA | SIGMOD 2022 | [笔记](./Sherman-SIGMOD2022/README.md) |
+| 04 | Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift | 训练技巧 / 优化动力学 | ICML 2015 | [笔记](./BatchNorm-ICML2015/README.md) |

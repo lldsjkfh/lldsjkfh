@@ -11,12 +11,15 @@
   - [LLMs Get Lost In Multi-Turn Conversation（ICLR 2026）](./论文精读/LLMs-Get-Lost-in-Multi-Turn-Conversation_ICLR2026.md) — 多轮对话为何让模型掉 39 分：分片模拟实验、能力/可靠性解耦、四类失效模式与机制链
   - [CycleNet（NeurIPS 2024）](./论文精读/CycleNet-NeurIPS2024/README.md) — 用显式周期建模做长时序预测，**含完整精度复现**：8 数据集 × 4 预测长度 8/8 对齐论文（最大偏差 0.20%），13 组消融与图表
   - [Sherman（SIGMOD 2022）](./论文精读/Sherman-SIGMOD2022/README.md) — 内存解耦架构下的写优化 B+ 树索引：命令合并、网卡片上锁、无序叶子 + 两级版本，倾斜写吞吐 24.7×
+  - [BatchNorm（ICML 2015）](./论文精读/BatchNorm-ICML2015/README.md) — 三行公式钉住每层输入的均值与尺度；2.3× 是干净的、14.8× 是打包的，「消除 ICS」的解释已被 Santurkar 2018 推翻
 - [Linux](./Linux/) — 系统编程笔记（IPC、线程、进程控制）
   - [IPC 与线程](./Linux/IPC与线程.md) — 共享内存四步（shm_open → ftruncate → mmap → munmap）、消息队列的边界与优先级、pthread 的创建与三种终止方式
   - [线程同步与线程池](./Linux/线程同步与线程池.md) — 信号量 vs 条件变量、有名/无名信号量的区别、线程池的四件套与关闭策略（immediate / wait 四种组合）
   - [threadpool.c](./Linux/threadpool.c) — 单文件手写线程池（约 380 行），语义对齐 GLib `g_thread_pool_free`，`make` 可编译，自带四种关闭组合的 demo
+  - [三种锁对比实验](./Linux/三种锁对比实验.md) — mutex / 自旋锁 / 原子自旋在 12 核上的实测：核内自旋快 1.96×，超核（48 线程）掉到 0.01×
 - [深度学习](./深度学习/) — 从张量开始的实操笔记
   - [深度学习课程笔记](./深度学习/深度学习课程笔记.html) — 8 章完整课程笔记：张量入门、自动微分、线性回归、参数初始化与损失函数、优化器与正则化、ANN 与 CNN、RNN 文本生成（图片已内嵌，单文件可直接打开）
   - [PyTorch 张量基础](./深度学习/PyTorch张量基础.md) — 创建 / 运算 / 索引三件事，广播规则、维度消长与四个高频坑
+  - [损失函数与优化器实验](./深度学习/损失函数与优化器实验.md) — 五种优化器同 lr 实测（SGD 300 轮 60%，RMSprop 12 轮达标）、手机价格分类加正则后 gap 从 5.0 压到 3.8 但精度只动 0.4 点
 
 > 提示：`.html` 文件在 GitHub 上不会直接渲染，可下载后用浏览器打开，或开启 GitHub Pages 在线访问。
